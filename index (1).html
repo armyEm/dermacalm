@@ -1,0 +1,3059 @@
+<!DOCTYPE html>
+<!--
+  ╔══════════════════════════════════════════════════════════╗
+  ║          D E R M A C A L M  —  PWA Application          ║
+  ║                                                          ║
+  ║  © 2025 Emma-Lee Hendricks. All Rights Reserved.        ║
+  ║  Concept, design, and original work by Emma-Lee         ║
+  ║  Hendricks. Unauthorised copying, redistribution,        ║
+  ║  modification, or commercial use of this application     ║
+  ║  or its design is strictly prohibited without written    ║
+  ║  permission from the copyright holder.                   ║
+  ║                                                          ║
+  ║  Fingerprint: ELH-DC-2025-7a9e7e-ORIGINAL               ║
+  ╚══════════════════════════════════════════════════════════╝
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#7a9e7e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="DermaCalm">
+<!-- Copyright & Ownership -->
+<meta name="author" content="Emma-Lee Hendricks">
+<meta name="copyright" content="© 2025 Emma-Lee Hendricks. All Rights Reserved.">
+<meta name="description" content="DermaCalm — Eczema & Skin Wellness PWA. Original concept and design by Emma-Lee Hendricks.">
+<meta name="owner" content="Emma-Lee Hendricks">
+<meta name="rights" content="All rights reserved. Unauthorised use prohibited.">
+<meta property="og:site_name" content="DermaCalm by Emma-Lee Hendricks">
+<meta property="og:title" content="DermaCalm — Skin Wellness App">
+<meta name="application-name" content="DermaCalm">
+<!-- Fingerprint token (do not remove) -->
+<meta name="dc-fingerprint" content="ELH-DC-2025-7a9e7e-3f8b2c1a">
+<link rel="manifest" href="manifest.json">
+<title>DermaCalm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f5f0;
+  --bg2: #eeeae2;
+  --card: #ffffff;
+  --sage: #7a9e7e;
+  --sage-light: #a8c5ab;
+  --sage-dark: #557a59;
+  --pink: #d4a5a5;
+  --pink-light: #f0d6d6;
+  --alert: #c0675a;
+  --alert-light: #f5e0dd;
+  --yellow: #d4b87a;
+  --yellow-light: #f5ead0;
+  --green: #7ab89a;
+  --text: #2d3530;
+  --text2: #6b7870;
+  --text3: #9aada6;
+  --border: #e0dbd0;
+  --shadow: 0 2px 16px rgba(45,53,48,0.07);
+  --shadow-lg: 0 8px 32px rgba(45,53,48,0.12);
+  --radius: 20px;
+  --radius-sm: 12px;
+  --nav-h: 72px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%; width: 100%;
+  background: var(--bg);
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ── LOCK SCREEN ── */
+#lock-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: linear-gradient(160deg, #4a6e4e 0%, #2d3530 100%);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 32px;
+  padding: 40px;
+}
+#lock-screen.hidden { display: none; }
+.lock-logo { text-align: center; }
+.lock-logo h1 { font-family: 'DM Serif Display', serif; color: #fff; font-size: 36px; letter-spacing: -1px; }
+.lock-logo p { color: rgba(255,255,255,0.6); font-size: 14px; margin-top: 6px; }
+.lock-leaf { font-size: 48px; margin-bottom: 8px; }
+.pin-display { display: flex; gap: 16px; margin-bottom: 8px; }
+.pin-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.5);
+  background: transparent; transition: all 0.2s;
+}
+.pin-dot.filled { background: #fff; border-color: #fff; }
+.pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 240px; }
+.pin-key {
+  background: rgba(255,255,255,0.12);
+  border: none; border-radius: 50%; width: 72px; height: 72px;
+  color: #fff; font-size: 22px; font-family: 'DM Sans', sans-serif;
+  font-weight: 500; cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.pin-key:active { background: rgba(255,255,255,0.28); transform: scale(0.95); }
+.pin-key.wide { border-radius: 36px; font-size: 14px; }
+.pin-error { color: var(--pink); font-size: 13px; min-height: 18px; text-align: center; }
+.lock-hint { color: rgba(255,255,255,0.4); font-size: 12px; text-align: center; }
+
+/* ── APP SHELL ── */
+#app { height: 100vh; display: flex; flex-direction: column; }
+#app.locked { display: none; }
+
+/* ── SCREENS ── */
+.screen {
+  display: none; flex: 1; overflow-y: auto;
+  padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 16px);
+  -webkit-overflow-scrolling: touch;
+}
+.screen.active { display: block; }
+.screen-inner { padding: 0 16px; }
+
+/* ── BOTTOM NAV ── */
+#bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: calc(var(--nav-h) + var(--safe-bottom));
+  background: var(--card); border-top: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-around;
+  padding-top: 8px; padding-bottom: var(--safe-bottom);
+  z-index: 100; box-shadow: 0 -4px 20px rgba(45,53,48,0.06);
+}
+.nav-item {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 4px; cursor: pointer; padding: 4px 12px;
+  min-width: 56px;
+}
+.nav-icon { font-size: 22px; transition: transform 0.2s; }
+.nav-label { font-size: 10px; font-weight: 500; color: var(--text3); transition: color 0.2s; }
+.nav-item.active .nav-label { color: var(--sage); }
+.nav-item.active .nav-icon { transform: scale(1.1); }
+.nav-center {
+  margin-top: -20px;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--sage), var(--sage-dark));
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(122,158,126,0.5);
+  cursor: pointer; border: 3px solid var(--bg);
+  transition: transform 0.2s;
+}
+.nav-center:active { transform: scale(0.93); }
+.nav-center-icon { font-size: 24px; color: white; }
+
+/* ── HEADERS ── */
+.screen-header {
+  padding: 52px 16px 20px;
+  background: linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
+}
+.screen-header h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 30px; letter-spacing: -0.5px;
+}
+.screen-header p { color: var(--text2); font-size: 14px; margin-top: 4px; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--card); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 20px;
+  margin-bottom: 12px;
+}
+.card-title {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text3); margin-bottom: 12px;
+}
+.card h3 { font-size: 17px; font-weight: 600; }
+
+/* ── SLIDERS ── */
+.slider-row { margin-bottom: 16px; }
+.slider-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.slider-label span { font-size: 14px; font-weight: 500; }
+.slider-val {
+  font-size: 20px; font-weight: 600; color: var(--sage);
+  min-width: 28px; text-align: right;
+  font-family: 'DM Serif Display', serif;
+}
+input[type=range] {
+  width: 100%; height: 6px; appearance: none;
+  background: var(--bg2); border-radius: 3px; outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  appearance: none; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--sage); box-shadow: 0 2px 8px rgba(122,158,126,0.4);
+  cursor: pointer;
+}
+.slider-ticks { display: flex; justify-content: space-between; margin-top: 4px; }
+.slider-ticks span { font-size: 9px; color: var(--text3); }
+
+/* ── TOGGLE ── */
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0; border-bottom: 1px solid var(--border);
+}
+.toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
+.toggle-info h4 { font-size: 15px; font-weight: 500; }
+.toggle-info p { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.toggle {
+  position: relative; width: 46px; height: 26px;
+  background: var(--bg2); border-radius: 13px;
+  cursor: pointer; transition: background 0.25s; flex-shrink: 0;
+}
+.toggle.on { background: var(--sage); }
+.toggle::after {
+  content: ''; position: absolute; top: 3px; left: 3px;
+  width: 20px; height: 20px; background: white; border-radius: 50%;
+  transition: transform 0.25s; box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+.toggle.on::after { transform: translateX(20px); }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px 24px; border-radius: 14px; border: none;
+  font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; width: 100%;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--sage); color: white; box-shadow: 0 4px 12px rgba(122,158,126,0.35); }
+.btn-primary:active { background: var(--sage-dark); }
+.btn-secondary { background: var(--bg2); color: var(--text); }
+.btn-ghost { background: transparent; color: var(--sage); padding: 10px 16px; }
+.btn-sm { padding: 8px 16px; font-size: 13px; width: auto; }
+.btn-alert { background: var(--alert); color: white; }
+.btn-row { display: flex; gap: 10px; }
+
+/* ── CHIPS ── */
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.chip {
+  padding: 6px 14px; border-radius: 20px; font-size: 13px;
+  background: var(--bg2); color: var(--text2); cursor: pointer;
+  border: 1.5px solid transparent; transition: all 0.2s; font-weight: 500;
+}
+.chip.active { background: var(--sage-light); color: var(--sage-dark); border-color: var(--sage); }
+.chip.pink.active { background: var(--pink-light); color: var(--alert); border-color: var(--pink); }
+
+/* ── PROGRESS BAR ── */
+.progress-bar {
+  height: 8px; background: var(--bg2); border-radius: 4px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--sage-light), var(--sage));
+  border-radius: 4px; transition: width 0.5s ease;
+}
+
+/* ── SUMMARY STATS ── */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat-card {
+  background: var(--bg2); border-radius: var(--radius-sm);
+  padding: 14px; text-align: center;
+}
+.stat-num {
+  font-family: 'DM Serif Display', serif; font-size: 32px;
+  color: var(--sage); line-height: 1;
+}
+.stat-label { font-size: 11px; color: var(--text3); margin-top: 4px; font-weight: 500; }
+
+/* ── ALERT CARDS ── */
+.alert-card {
+  background: var(--alert-light); border-radius: var(--radius-sm);
+  padding: 14px 16px; margin-bottom: 8px;
+  border-left: 3px solid var(--alert);
+  display: flex; align-items: center; gap: 12px;
+}
+.alert-card .alert-icon { font-size: 20px; }
+.alert-card p { font-size: 13px; color: var(--alert); font-weight: 500; flex: 1; }
+.alert-card.warn { background: var(--yellow-light); border-color: var(--yellow); }
+.alert-card.warn p { color: #8a6d20; }
+
+/* ── BODY MAP ── */
+#body-screen .screen-header { padding-bottom: 12px; }
+.body-toggle-row { display: flex; gap: 8px; padding: 0 16px 16px; }
+.body-toggle {
+  flex: 1; padding: 10px; text-align: center; border-radius: var(--radius-sm);
+  background: var(--bg2); font-size: 13px; font-weight: 600; color: var(--text2);
+  cursor: pointer; transition: all 0.2s;
+}
+.body-toggle.active { background: var(--sage); color: white; }
+#body-svg-wrap {
+  padding: 0 16px; position: relative;
+}
+#body-svg-wrap svg {
+  width: 100%; max-width: 300px; display: block; margin: 0 auto;
+  height: 380px;
+}
+.body-part {
+  cursor: pointer; transition: fill 0.25s, opacity 0.25s;
+  fill: #c8d9ca; stroke: #a0b8a4; stroke-width: 1.5;
+}
+.body-part:active { opacity: 0.7; }
+.body-part.flare { fill: #e8a09a; stroke: #c0675a; }
+.body-part.irritated { fill: #e8d08a; stroke: #c0a050; }
+.body-part.healed { fill: #90c8a8; stroke: #60a880; }
+.body-legend { display: flex; gap: 12px; justify-content: center; padding: 12px 0; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* ── MODAL / BOTTOM SHEET ── */
+.overlay {
+  position: fixed; inset: 0; background: rgba(45,53,48,0.4);
+  z-index: 200; display: none; align-items: flex-end;
+  backdrop-filter: blur(3px);
+}
+.overlay.open { display: flex; }
+.sheet {
+  background: var(--card); border-radius: 24px 24px 0 0;
+  padding: 0 20px 40px; width: 100%;
+  max-height: 92vh; overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.sheet-handle {
+  width: 36px; height: 4px; background: var(--border);
+  border-radius: 2px; margin: 14px auto 20px;
+}
+.sheet-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 24px; margin-bottom: 20px;
+}
+
+/* ── INSIGHT CARDS ── */
+.insight-card {
+  background: linear-gradient(135deg, var(--sage-light) 0%, var(--sage) 100%);
+  border-radius: var(--radius); padding: 20px; margin-bottom: 12px; color: white;
+}
+.insight-card.pink-grad {
+  background: linear-gradient(135deg, #e8c5c5 0%, #d4a5a5 100%); color: var(--text);
+}
+.insight-card.yellow-grad {
+  background: linear-gradient(135deg, #f0e0b0 0%, #d4b87a 100%); color: var(--text);
+}
+.insight-icon { font-size: 28px; margin-bottom: 8px; }
+.insight-title { font-weight: 600; font-size: 16px; margin-bottom: 6px; }
+.insight-body { font-size: 13px; opacity: 0.85; line-height: 1.5; }
+
+/* ── MED CARDS ── */
+.med-card {
+  background: var(--card); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 10px; box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 14px;
+}
+.med-icon {
+  width: 44px; height: 44px; border-radius: 14px;
+  background: var(--pink-light); display: flex; align-items: center;
+  justify-content: center; font-size: 22px; flex-shrink: 0;
+}
+.med-info { flex: 1; }
+.med-info h4 { font-size: 15px; font-weight: 600; }
+.med-info p { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.med-badge {
+  font-size: 11px; font-weight: 600; padding: 4px 10px;
+  border-radius: 8px; background: var(--sage-light); color: var(--sage-dark);
+}
+.med-badge.taken { background: #d0f0dc; color: #2a7a50; }
+.med-badge.missed { background: var(--alert-light); color: var(--alert); }
+
+/* ── PRODUCT CARDS ── */
+.product-card {
+  background: var(--card); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 10px; box-shadow: var(--shadow);
+}
+.product-rating { display: flex; gap: 3px; margin-top: 8px; }
+.star { font-size: 14px; color: var(--yellow); }
+
+/* ── INPUT FIELDS ── */
+.field { margin-bottom: 16px; }
+.field label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.field input, .field textarea, .field select {
+  width: 100%; padding: 13px 16px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); background: var(--bg);
+  font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--text);
+  outline: none; transition: border-color 0.2s;
+}
+.field input:focus, .field textarea:focus, .field select:focus { border-color: var(--sage); }
+.field textarea { resize: none; height: 80px; }
+
+/* ── WATER TRACKER ── */
+.water-display {
+  text-align: center; padding: 24px 0;
+}
+.water-amount {
+  font-family: 'DM Serif Display', serif; font-size: 64px;
+  color: var(--sage); line-height: 1;
+}
+.water-unit { font-size: 16px; color: var(--text3); }
+.water-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 16px; }
+.water-btn {
+  background: var(--bg2); border-radius: var(--radius-sm);
+  border: none; padding: 12px 6px; font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer;
+  transition: all 0.2s;
+}
+.water-btn:active { background: var(--sage-light); transform: scale(0.95); }
+
+/* ── MORE GRID ── */
+.more-section-title {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text3); padding: 16px 0 8px;
+}
+.more-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
+.more-tile {
+  background: var(--card); border-radius: var(--radius);
+  padding: 20px 16px; box-shadow: var(--shadow);
+  cursor: pointer; transition: transform 0.2s;
+  text-align: left;
+}
+.more-tile:active { transform: scale(0.97); }
+.more-tile-icon { font-size: 28px; margin-bottom: 10px; }
+.more-tile h4 { font-size: 14px; font-weight: 600; }
+.more-tile p { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+/* ── LOG CONFIRMATION ── */
+.success-anim {
+  text-align: center; padding: 40px 0;
+}
+.success-circle {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--sage-light), var(--sage));
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px; font-size: 36px;
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes popIn {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.success-anim h3 { font-family: 'DM Serif Display', serif; font-size: 24px; }
+.success-anim p { color: var(--text3); font-size: 14px; margin-top: 6px; }
+
+/* ── MOOD SELECTOR ── */
+.mood-row { display: flex; gap: 8px; justify-content: space-between; }
+.mood-btn {
+  flex: 1; padding: 12px 4px; border-radius: var(--radius-sm);
+  background: var(--bg2); border: 2px solid transparent;
+  cursor: pointer; text-align: center; transition: all 0.2s; font-size: 22px;
+}
+.mood-btn span { display: block; font-size: 10px; color: var(--text3); margin-top: 4px; font-weight: 600; }
+.mood-btn.active { border-color: var(--sage); background: rgba(122,158,126,0.1); }
+
+/* ── ROUTINE ── */
+.routine-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px; background: var(--card); border-radius: var(--radius-sm);
+  margin-bottom: 8px; box-shadow: var(--shadow);
+}
+.routine-check {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid var(--border); display: flex;
+  align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+}
+.routine-check.done { background: var(--sage); border-color: var(--sage); color: white; font-size: 14px; }
+
+/* ── SCROLLBAR HIDE ── */
+.screen::-webkit-scrollbar { display: none; }
+.sheet::-webkit-scrollbar { display: none; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; top: 60px; left: 50%; transform: translateX(-50%) translateY(-20px);
+  background: var(--text); color: white; padding: 12px 20px;
+  border-radius: 20px; font-size: 14px; z-index: 9000;
+  opacity: 0; transition: all 0.3s; white-space: nowrap;
+  box-shadow: var(--shadow-lg);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── EMPTY STATE ── */
+.empty-state { text-align: center; padding: 48px 24px; }
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+.empty-state p { color: var(--text3); font-size: 14px; }
+
+/* ── SETTINGS ── */
+.settings-section { margin-bottom: 24px; }
+.settings-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px; background: var(--card); border-radius: var(--radius-sm);
+  margin-bottom: 8px; cursor: pointer;
+}
+.settings-item h4 { font-size: 15px; }
+.settings-item p { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.settings-arrow { color: var(--text3); font-size: 18px; }
+
+/* ── STREAK BADGE ── */
+.streak-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--yellow-light); color: #8a6020;
+  padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
+}
+
+/* ── PHOTO UPLOAD ── */
+.photo-area {
+  border: 2px dashed var(--border); border-radius: var(--radius-sm);
+  padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s;
+  background: var(--bg);
+}
+.photo-area:active { border-color: var(--sage); background: rgba(122,158,126,0.05); }
+.photo-area p { font-size: 13px; color: var(--text3); margin-top: 8px; }
+
+/* ── SECTION DIVIDER ── */
+.section-gap { height: 20px; }
+
+/* ── HOME SCREEN SPECIFIC ── */
+.home-greeting {
+  padding: 52px 16px 8px;
+}
+.home-greeting .date-label { font-size: 12px; color: var(--text3); font-weight: 500; letter-spacing: 0.5px; }
+.home-greeting h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 32px; letter-spacing: -0.5px; margin-top: 4px;
+}
+
+/* ── QUICK ACTION BTNS ── */
+.quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.qa-btn {
+  background: var(--card); border-radius: var(--radius); padding: 16px;
+  box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s;
+  border: none; text-align: left;
+}
+.qa-btn:active { transform: scale(0.97); }
+.qa-btn .qa-icon { font-size: 24px; margin-bottom: 8px; display: block; }
+.qa-btn h4 { font-size: 14px; font-weight: 600; }
+.qa-btn p { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+/* ── RECIPE CARD ── */
+.recipe-card {
+  background: var(--card); border-radius: var(--radius);
+  padding: 18px; margin-bottom: 10px; box-shadow: var(--shadow);
+}
+.recipe-tag {
+  display: inline-block; padding: 3px 10px; border-radius: 10px;
+  font-size: 11px; font-weight: 600;
+  background: var(--sage-light); color: var(--sage-dark);
+  margin-right: 6px; margin-top: 6px;
+}
+
+/* ── BACK BUTTON ── */
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 14px; color: var(--sage); font-weight: 600;
+  cursor: pointer; padding: 4px 0; margin-bottom: 12px;
+  background: none; border: none;
+}
+
+/* ── BODY PART DETAIL ── */
+.body-detail-overlay {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(45,53,48,0.4); backdrop-filter: blur(3px);
+  display: none; align-items: flex-end;
+}
+.body-detail-overlay.open { display: flex; }
+
+/* ── WEEKLY CHART MINI ── */
+.week-chart { display: flex; align-items: flex-end; gap: 4px; height: 50px; }
+.week-bar { flex: 1; border-radius: 4px 4px 0 0; background: var(--sage-light); min-height: 4px; transition: height 0.4s; }
+.week-days { display: flex; gap: 4px; }
+.week-days span { flex: 1; font-size: 9px; color: var(--text3); text-align: center; }
+
+/* ── FLARE STATUS CHIPS ── */
+.flare-chips { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.flare-chip {
+  padding: 12px; border-radius: var(--radius-sm); text-align: center;
+  cursor: pointer; font-size: 13px; font-weight: 600;
+  border: 2px solid transparent; background: var(--bg2); transition: all 0.2s;
+}
+.flare-chip.active { border-color: var(--sage); background: rgba(122,158,126,0.1); color: var(--sage-dark); }
+.flare-chip.flare-active.active { border-color: var(--alert); background: var(--alert-light); color: var(--alert); }
+
+/* ── LOG HISTORY ITEM ── */
+.log-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px; background: var(--card); border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+}
+.log-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--sage); flex-shrink: 0;
+}
+.log-item p { font-size: 13px; color: var(--text2); }
+.log-item .log-time { font-size: 11px; color: var(--text3); margin-left: auto; }
+
+/* ── TRIGGER TAG ── */
+.trigger-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 20px;
+  font-size: 12px; font-weight: 500;
+  background: var(--pink-light); color: var(--alert);
+  margin: 4px; cursor: pointer;
+}
+.trigger-tag.active { background: var(--alert); color: white; }
+
+/* ── ADHERENCE CIRCLE ── */
+.adherence-wrap { text-align: center; padding: 12px 0; }
+.adherence-pct {
+  font-family: 'DM Serif Display', serif;
+  font-size: 48px; color: var(--sage);
+}
+.adherence-label { font-size: 12px; color: var(--text3); margin-top: 4px; }
+
+/* ── RECIPE INGREDIENT ── */
+.ingredient-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.ingredient-item:last-child { border-bottom: none; }
+.ingredient-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sage); flex-shrink: 0; }
+
+/* ── SUBSCREEN ── */
+.subscreen {
+  position: fixed; inset: 0; z-index: 150;
+  background: var(--bg); display: none;
+  flex-direction: column; overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.subscreen.open { display: flex; flex-direction: column; }
+.subscreen-header {
+  padding: 52px 16px 16px;
+  background: linear-gradient(180deg, var(--bg2) 0%, var(--bg) 100%);
+  display: flex; align-items: center; gap: 12px;
+}
+.subscreen-header h2 { font-family: 'DM Serif Display', serif; font-size: 26px; }
+.subscreen-body { padding: 0 16px 80px; flex: 1; }
+
+/* animation helpers */
+.fade-in { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── WATERMARK SYSTEM ── */
+/* Single safe watermark layer — pointer-events:none ensures ZERO click blocking */
+#wm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 49;           /* below nav (100) and all sheets (200+) */
+  pointer-events: none;  /* NEVER intercepts clicks or touches */
+  user-select: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='170'%3E%3Cg transform='rotate(-28,170,85)'%3E%3Ctext x='170' y='70' dominant-baseline='middle' text-anchor='middle' font-family='Georgia%2Cserif' font-size='12' fill='rgba(122%2C158%2C126%2C0.09)' letter-spacing='1.5'%3E%C2%A9 Emma-Lee Hendricks%3C/text%3E%3Ctext x='170' y='90' dominant-baseline='middle' text-anchor='middle' font-family='Georgia%2Cserif' font-size='8.5' fill='rgba(122%2C158%2C126%2C0.06)' letter-spacing='0.8'%3EDermaCalm %E2%80%94 All Rights Reserved%3C/text%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 340px 170px;
+}
+
+/* Footer credit — sits inside the existing nav padding, never on top of content */
+#wm-footer {
+  text-align: center;
+  font-size: 9px;
+  color: rgba(122,158,126,0.55);
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.3px;
+  padding: 2px 0 6px;
+  pointer-events: none;
+  user-select: none;
+  /* inline inside nav — NOT fixed/absolute so it can't block anything */
+  display: block;
+  width: 100%;
+}
+
+/* Lock-screen credit */
+#lock-screen .lock-credit {
+  position: absolute;
+  bottom: 20px;
+  left: 0; right: 0;
+  text-align: center;
+  font-size: 10px;
+  color: rgba(255,255,255,0.28);
+  letter-spacing: 0.4px;
+  font-family: 'DM Sans', sans-serif;
+  pointer-events: none;
+}
+
+/* About / copyright card in More tab */
+#wm-about-card {
+  background: linear-gradient(135deg, #eef4ef, #dceede);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(122,158,126,0.2);
+}
+#wm-about-card p {
+  font-size: 11px;
+  color: var(--text3);
+  line-height: 1.7;
+  text-align: center;
+}
+#wm-about-card .wm-brand {
+  font-family: 'DM Serif Display', serif;
+  font-size: 14px;
+  color: var(--sage-dark);
+  display: block;
+  margin-bottom: 4px;
+}
+</style>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<style>
+/* ── GOOGLE SIGN-IN SCREEN ── */
+#auth-screen {
+  position: fixed; inset: 0; z-index: 9998;
+  background: linear-gradient(160deg, #4a6e4e 0%, #2d3530 100%);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 24px; padding: 40px;
+}
+#auth-screen.hidden { display: none; }
+.auth-logo { text-align: center; }
+.auth-logo h1 { font-family: 'DM Serif Display', serif; color: #fff; font-size: 36px; letter-spacing: -1px; }
+.auth-logo p { color: rgba(255,255,255,0.6); font-size: 14px; margin-top: 6px; }
+.auth-leaf { font-size: 52px; margin-bottom: 8px; }
+.auth-card {
+  background: rgba(255,255,255,0.1);
+  border-radius: 24px;
+  padding: 28px 24px;
+  width: 100%; max-width: 320px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.auth-card p {
+  color: rgba(255,255,255,0.75);
+  font-size: 14px; line-height: 1.6;
+  margin-bottom: 20px;
+}
+.btn-google {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  width: 100%; padding: 14px 20px;
+  background: #ffffff; border: none; border-radius: 14px;
+  font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
+  color: #2d3530; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  transition: all 0.2s;
+}
+.btn-google:active { transform: scale(0.97); }
+.btn-google svg { width: 20px; height: 20px; flex-shrink: 0; }
+.auth-skip {
+  color: rgba(255,255,255,0.4); font-size: 12px;
+  cursor: pointer; text-decoration: underline;
+  background: none; border: none;
+  font-family: 'DM Sans', sans-serif;
+}
+.auth-skip:hover { color: rgba(255,255,255,0.7); }
+.auth-error { color: #f0d6d6; font-size: 13px; min-height: 18px; text-align: center; }
+/* sync indicator */
+#sync-badge {
+  position: fixed; top: 14px; right: 14px; z-index: 200;
+  display: flex; align-items: center; gap: 6px;
+  background: var(--card); border-radius: 20px;
+  padding: 5px 12px 5px 8px;
+  box-shadow: var(--shadow);
+  font-size: 11px; color: var(--text2); font-weight: 600;
+  transition: all 0.3s;
+}
+#sync-badge.hidden { opacity: 0; pointer-events: none; }
+.sync-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--sage);
+}
+.sync-dot.syncing {
+  background: var(--yellow);
+  animation: pulse 1s infinite;
+}
+.sync-dot.offline { background: var(--text3); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+/* user avatar in header */
+.user-avatar {
+  position: fixed; top: 12px; left: 14px; z-index: 200;
+  width: 32px; height: 32px; border-radius: 50%;
+  object-fit: cover; box-shadow: var(--shadow);
+  cursor: pointer; display: none;
+}
+#user-initials {
+  position: fixed; top: 12px; left: 14px; z-index: 200;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--sage); color: white;
+  font-size: 12px; font-weight: 700;
+  display: none; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: var(--shadow);
+}
+</style>
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div id="lock-screen">
+  <div class="lock-logo">
+    <div class="lock-leaf">🌿</div>
+    <h1>DermaCalm</h1>
+    <p>Your skin wellness companion</p>
+  </div>
+  <div class="pin-display" id="pin-display">
+    <div class="pin-dot" id="pd0"></div>
+    <div class="pin-dot" id="pd1"></div>
+    <div class="pin-dot" id="pd2"></div>
+    <div class="pin-dot" id="pd3"></div>
+  </div>
+  <p id="pin-error" class="pin-error"></p>
+  <div class="pin-keypad">
+    <button class="pin-key" onclick="pinPress('1')">1</button>
+    <button class="pin-key" onclick="pinPress('2')">2</button>
+    <button class="pin-key" onclick="pinPress('3')">3</button>
+    <button class="pin-key" onclick="pinPress('4')">4</button>
+    <button class="pin-key" onclick="pinPress('5')">5</button>
+    <button class="pin-key" onclick="pinPress('6')">6</button>
+    <button class="pin-key" onclick="pinPress('7')">7</button>
+    <button class="pin-key" onclick="pinPress('8')">8</button>
+    <button class="pin-key" onclick="pinPress('9')">9</button>
+    <button class="pin-key wide" onclick="pinClear()">⌫</button>
+    <button class="pin-key" onclick="pinPress('0')">0</button>
+    <button class="pin-key wide" id="pin-action" onclick="pinAction()">OK</button>
+  </div>
+  <p class="lock-hint" id="lock-hint">Enter your 4-digit PIN to unlock</p>
+  <span class="lock-credit">© 2025 Emma-Lee Hendricks · DermaCalm</span>
+</div>
+
+<!-- GOOGLE SIGN-IN SCREEN -->
+<div id="auth-screen" class="hidden">
+  <div class="auth-logo">
+    <div class="auth-leaf">🌿</div>
+    <h1>DermaCalm</h1>
+    <p>Your skin wellness companion</p>
+  </div>
+  <div class="auth-card">
+    <p>Sign in to save your progress to the cloud. Your data stays safe even if you clear your browser.</p>
+    <button class="btn-google" onclick="signInWithGoogle()">
+      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.05 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.55-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+      Continue with Google
+    </button>
+    <div style="height:12px;"></div>
+    <p id="auth-error" class="auth-error"></p>
+    <button class="auth-skip" onclick="skipAuth()">Use without account (local only)</button>
+  </div>
+  <span style="color:rgba(255,255,255,0.25);font-size:10px;">© 2025 Emma-Lee Hendricks · DermaCalm</span>
+</div>
+
+<!-- SYNC BADGE -->
+<div id="sync-badge" class="hidden">
+  <div class="sync-dot" id="sync-dot"></div>
+  <span id="sync-label">Synced</span>
+</div>
+
+<!-- USER INITIALS AVATAR -->
+<div id="user-initials" onclick="showUserMenu()"></div>
+<img id="user-avatar-img" style="position:fixed;top:12px;left:14px;z-index:200;width:32px;height:32px;border-radius:50%;object-fit:cover;box-shadow:var(--shadow);cursor:pointer;display:none;" src="" alt="" onclick="showUserMenu()">
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- WATERMARK OVERLAY — pointer-events:none, never blocks clicks -->
+<div id="wm-overlay" aria-hidden="true"></div>
+
+<!-- APP -->
+<div id="app" class="locked">
+
+  <!-- HOME SCREEN -->
+  <div class="screen active" id="home-screen">
+    <div class="home-greeting">
+      <p class="date-label" id="greeting-date"></p>
+      <h1 id="greeting-text">Good Morning 🌿</h1>
+    </div>
+    <div class="screen-inner fade-in">
+      <!-- Alerts -->
+      <div id="home-alerts"></div>
+
+      <!-- Daily Summary -->
+      <div class="card">
+        <div class="card-title">Today's Summary</div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-num" id="hs-itch">–</div>
+            <div class="stat-label">Itch Level</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="hs-stress">–</div>
+            <div class="stat-label">Stress Level</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="hs-water">0</div>
+            <div class="stat-label">Cups Water</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="hs-meds">–</div>
+            <div class="stat-label">Meds</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;">
+          <div class="slider-label">
+            <span style="font-size:12px;color:var(--text3);">Water Goal</span>
+            <span style="font-size:12px;color:var(--text3);" id="hs-water-label">0 / 8 cups</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="hs-water-bar" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <button class="qa-btn" onclick="openQuickLog()">
+          <span class="qa-icon">✏️</span>
+          <h4>Log Today</h4>
+          <p>Quick entry</p>
+        </button>
+        <button class="qa-btn" onclick="openMedSheet()">
+          <span class="qa-icon">💊</span>
+          <h4>Medications</h4>
+          <p>Mark taken</p>
+        </button>
+      </div>
+
+      <!-- Streak -->
+      <div style="margin-bottom:12px;">
+        <span class="streak-badge">🔥 <span id="streak-count">0</span> day streak</span>
+      </div>
+
+      <!-- Body Preview -->
+      <div class="card" onclick="switchTab('body')">
+        <div class="card-title">Body Status</div>
+        <div id="body-preview-text" style="font-size:14px;color:var(--text2);line-height:1.6;">No areas logged yet. Tap to open body map →</div>
+      </div>
+
+      <!-- Insight Preview -->
+      <div class="card" style="background:linear-gradient(135deg,#eef5ef,#dceede);">
+        <div class="card-title">Today's Insight</div>
+        <div id="insight-preview" style="font-size:15px;color:var(--text);line-height:1.6;">Log a few days to unlock personalized insights.</div>
+      </div>
+
+      <div class="section-gap"></div>
+    </div>
+  </div>
+
+  <!-- BODY SCREEN -->
+  <div class="screen" id="body-screen">
+    <div class="screen-header">
+      <h1>Body Map</h1>
+      <p>Tap an area to log symptoms</p>
+    </div>
+    <div class="body-toggle-row">
+      <div class="body-toggle active" id="bt-front" onclick="setBodySide('front')">Front</div>
+      <div class="body-toggle" id="bt-back" onclick="setBodySide('back')">Back</div>
+    </div>
+    <div id="body-svg-wrap">
+      <svg viewBox="0 0 200 380" xmlns="http://www.w3.org/2000/svg" id="body-svg">
+        <!-- FRONT body -->
+        <g id="body-front">
+          <!-- Head -->
+          <ellipse cx="100" cy="32" rx="26" ry="28" class="body-part" data-part="face" data-label="Face"/>
+          <!-- Neck -->
+          <rect x="90" y="58" width="20" height="18" rx="6" class="body-part" data-part="neck" data-label="Neck"/>
+          <!-- Torso -->
+          <path d="M62 76 C55 76 48 82 48 90 L46 160 C46 166 52 170 58 170 L142 170 C148 170 154 166 154 160 L152 90 C152 82 145 76 138 76 Z" class="body-part" data-part="torso" data-label="Torso"/>
+          <!-- Left arm -->
+          <path d="M46 82 C38 82 32 88 30 96 L24 148 C22 156 28 164 36 164 L48 164 L54 90 Z" class="body-part" data-part="left_arm" data-label="Left Arm"/>
+          <!-- Right arm -->
+          <path d="M154 82 C162 82 168 88 170 96 L176 148 C178 156 172 164 164 164 L152 164 L146 90 Z" class="body-part" data-part="right_arm" data-label="Right Arm"/>
+          <!-- Left hand -->
+          <ellipse cx="30" cy="176" rx="16" ry="14" class="body-part" data-part="left_hand" data-label="Left Hand"/>
+          <!-- Right hand -->
+          <ellipse cx="170" cy="176" rx="16" ry="14" class="body-part" data-part="right_hand" data-label="Right Hand"/>
+          <!-- Left leg -->
+          <path d="M68 170 L58 290 C57 298 63 304 70 304 L92 304 C99 304 104 298 102 290 L96 170 Z" class="body-part" data-part="left_leg" data-label="Left Leg"/>
+          <!-- Right leg -->
+          <path d="M132 170 L142 290 C143 298 137 304 130 304 L108 304 C101 304 96 298 98 290 L104 170 Z" class="body-part" data-part="right_leg" data-label="Right Leg"/>
+          <!-- Left foot -->
+          <ellipse cx="70" cy="318" rx="18" ry="12" class="body-part" data-part="left_foot" data-label="Left Foot"/>
+          <!-- Right foot -->
+          <ellipse cx="130" cy="318" rx="18" ry="12" class="body-part" data-part="right_foot" data-label="Right Foot"/>
+        </g>
+        <!-- BACK body (hidden) -->
+        <g id="body-back" display="none">
+          <ellipse cx="100" cy="32" rx="26" ry="28" class="body-part" data-part="face_back" data-label="Head/Scalp"/>
+          <rect x="90" y="58" width="20" height="18" rx="6" class="body-part" data-part="neck_back" data-label="Neck (back)"/>
+          <path d="M62 76 C55 76 48 82 48 90 L46 160 C46 166 52 170 58 170 L142 170 C148 170 154 166 154 160 L152 90 C152 82 145 76 138 76 Z" class="body-part" data-part="upper_back" data-label="Upper Back"/>
+          <path d="M46 82 C38 82 32 88 30 96 L24 148 C22 156 28 164 36 164 L48 164 L54 90 Z" class="body-part" data-part="left_arm_back" data-label="Left Arm (back)"/>
+          <path d="M154 82 C162 82 168 88 170 96 L176 148 C178 156 172 164 164 164 L152 164 L146 90 Z" class="body-part" data-part="right_arm_back" data-label="Right Arm (back)"/>
+          <ellipse cx="30" cy="176" rx="16" ry="14" class="body-part" data-part="left_hand_back" data-label="Left Hand (back)"/>
+          <ellipse cx="170" cy="176" rx="16" ry="14" class="body-part" data-part="right_hand_back" data-label="Right Hand (back)"/>
+          <path d="M68 170 L58 290 C57 298 63 304 70 304 L92 304 C99 304 104 298 102 290 L96 170 Z" class="body-part" data-part="left_leg_back" data-label="Left Leg (back)"/>
+          <path d="M132 170 L142 290 C143 298 137 304 130 304 L108 304 C101 304 96 298 98 290 L104 170 Z" class="body-part" data-part="right_leg_back" data-label="Right Leg (back)"/>
+          <ellipse cx="70" cy="318" rx="18" ry="12" class="body-part" data-part="left_foot_back" data-label="Left Foot (back)"/>
+          <ellipse cx="130" cy="318" rx="18" ry="12" class="body-part" data-part="right_foot_back" data-label="Right Foot (back)"/>
+        </g>
+      </svg>
+    </div>
+    <div class="body-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#c8d9ca;border:1.5px solid #a0b8a4"></div> Clear</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e8d08a;border:1.5px solid #c0a050"></div> Irritated</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e8a09a;border:1.5px solid #c0675a"></div> Flare</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#90c8a8;border:1.5px solid #60a880"></div> Healed</div>
+    </div>
+    <div style="padding:0 16px 16px;" id="body-history-section">
+      <div class="card-title" style="padding-top:8px;">Recent Logs</div>
+      <div id="body-log-list"></div>
+    </div>
+  </div>
+
+  <!-- LOG PLACEHOLDER (opens sheet, tab does nothing) -->
+  <div class="screen" id="log-screen"></div>
+
+  <!-- INSIGHTS SCREEN -->
+  <div class="screen" id="insights-screen">
+    <div class="screen-header">
+      <h1>Insights</h1>
+      <p>Patterns from your data</p>
+    </div>
+    <div class="screen-inner fade-in">
+      <!-- Weekly chart -->
+      <div class="card">
+        <div class="card-title">This Week — Itch Level</div>
+        <div class="week-chart" id="week-chart"></div>
+        <div class="week-days" id="week-days" style="margin-top:4px;"></div>
+      </div>
+
+      <div id="insights-list"></div>
+
+      <div class="card" id="weekly-summary-card">
+        <div class="card-title">Weekly Summary</div>
+        <div id="weekly-summary-text" style="font-size:14px;color:var(--text2);line-height:1.8;"></div>
+      </div>
+
+      <div class="section-gap"></div>
+    </div>
+  </div>
+
+  <!-- MORE SCREEN -->
+  <div class="screen" id="more-screen">
+    <div class="screen-header">
+      <h1>More</h1>
+      <p>All your health tools</p>
+    </div>
+    <div class="screen-inner">
+      <p class="more-section-title">Health Tracking</p>
+      <div class="more-grid">
+        <div class="more-tile" onclick="openSub('trigger-tracker')">
+          <div class="more-tile-icon">⚡</div>
+          <h4>Trigger Tracker</h4>
+          <p>Log what worsens symptoms</p>
+        </div>
+        <div class="more-tile" onclick="openSub('allergy-tracker')">
+          <div class="more-tile-icon">🌸</div>
+          <h4>Allergy Tracker</h4>
+          <p>Known allergens</p>
+        </div>
+        <div class="more-tile" onclick="openSub('water-tracker')">
+          <div class="more-tile-icon">💧</div>
+          <h4>Water Tracker</h4>
+          <p>Daily hydration</p>
+        </div>
+        <div class="more-tile" onclick="openSub('routine-tracker')">
+          <div class="more-tile-icon">☀️</div>
+          <h4>Routine Tracker</h4>
+          <p>AM / PM habits</p>
+        </div>
+      </div>
+
+      <p class="more-section-title">Treatments</p>
+      <div class="more-grid">
+        <div class="more-tile" onclick="openSub('product-tracker')">
+          <div class="more-tile-icon">🧴</div>
+          <h4>Product Tracker</h4>
+          <p>Creams & treatments</p>
+        </div>
+        <div class="more-tile" onclick="openSub('recipes')">
+          <div class="more-tile-icon">🌿</div>
+          <h4>Natural Recipes</h4>
+          <p>DIY remedies</p>
+        </div>
+      </div>
+
+      <p class="more-section-title">Medication</p>
+      <div class="more-grid">
+        <div class="more-tile" onclick="openSub('pill-tracker')">
+          <div class="more-tile-icon">💊</div>
+          <h4>Pill Tracker</h4>
+          <p>Schedule & adherence</p>
+        </div>
+        <div class="more-tile" onclick="openSub('stress-tracker')">
+          <div class="more-tile-icon">🧠</div>
+          <h4>Stress & Anxiety</h4>
+          <p>Mental well-being</p>
+        </div>
+      </div>
+
+      <p class="more-section-title">Account</p>
+      <div class="settings-section">
+        <div class="settings-item" id="account-info-row">
+          <div><h4 id="account-name">👤 Not signed in</h4><p id="account-email">Local storage only</p></div>
+          <span class="settings-arrow">›</span>
+        </div>
+        <div class="settings-item" id="sign-in-row" onclick="showAuthScreen()" style="display:none;">
+          <div><h4>🔑 Sign in with Google</h4><p>Save data to the cloud</p></div>
+          <span class="settings-arrow">›</span>
+        </div>
+        <div class="settings-item" id="sign-out-row" onclick="signOutUser()" style="display:none;">
+          <div><h4 style="color:var(--alert)">🚪 Sign Out</h4><p>Returns to local storage</p></div>
+          <span class="settings-arrow">›</span>
+        </div>
+      </div>
+
+      <p class="more-section-title">Settings</p>
+      <div class="settings-section">
+        <div class="settings-item" onclick="openSub('settings-notif')">
+          <div><h4>🔔 Notifications</h4><p>Reminders & alerts</p></div>
+          <span class="settings-arrow">›</span>
+        </div>
+        <div class="settings-item" onclick="openSub('settings-pin')">
+          <div><h4>🔐 Change PIN</h4><p>App lock settings</p></div>
+          <span class="settings-arrow">›</span>
+        </div>
+        <div class="settings-item" onclick="exportData()">
+          <div><h4>📤 Export Data</h4><p>Download your logs</p></div>
+          <span class="settings-arrow">›</span>
+        </div>
+        <div class="settings-item" onclick="confirmReset()">
+          <div><h4 style="color:var(--alert)">🗑️ Reset All Data</h4><p>Clears everything</p></div>
+          <span class="settings-arrow">›</span>
+        </div>
+      </div>
+
+      <!-- COPYRIGHT / ABOUT -->
+      <div id="wm-about-card">
+        <span class="wm-brand">🌿 DermaCalm</span>
+        <p>Original concept, design &amp; development by<br>
+        <strong style="color:var(--sage-dark);">Emma-Lee Hendricks</strong><br>
+        © 2025 · All Rights Reserved<br>
+        <span style="font-size:10px;opacity:0.7;">Fingerprint: ELH-DC-2025-7a9e7e</span></p>
+      </div>
+
+      <div class="section-gap"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav id="bottom-nav">
+    <div style="position:absolute;top:0;left:0;right:0;text-align:center;">
+      <span id="wm-footer">🌿 © Emma-Lee Hendricks</span>
+    </div>
+    <div class="nav-item active" id="nav-home" onclick="switchTab('home')">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">Home</div>
+    </div>
+    <div class="nav-item" id="nav-body" onclick="switchTab('body')">
+      <div class="nav-icon">🧍</div>
+      <div class="nav-label">Body</div>
+    </div>
+    <div class="nav-center" onclick="openQuickLog()">
+      <div class="nav-center-icon">＋</div>
+    </div>
+    <div class="nav-item" id="nav-insights" onclick="switchTab('insights')">
+      <div class="nav-icon">📊</div>
+      <div class="nav-label">Insights</div>
+    </div>
+    <div class="nav-item" id="nav-more" onclick="switchTab('more')">
+      <div class="nav-icon">⋯</div>
+      <div class="nav-label">More</div>
+    </div>
+  </nav>
+</div>
+
+<!-- ══════════════════════════════════════
+     OVERLAYS / SHEETS
+══════════════════════════════════════ -->
+
+<!-- QUICK LOG SHEET -->
+<div class="overlay" id="quick-log-overlay" onclick="closeSheet('quick-log-overlay')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="ql-title">Quick Log</div>
+    <div id="ql-body">
+      <div class="slider-row">
+        <div class="slider-label">
+          <span>🔥 Itch Level</span>
+          <span class="slider-val" id="ql-itch-val">5</span>
+        </div>
+        <input type="range" min="1" max="10" value="5" id="ql-itch"
+          oninput="document.getElementById('ql-itch-val').textContent=this.value">
+        <div class="slider-ticks"><span>1</span><span>5</span><span>10</span></div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-label">
+          <span>😤 Stress Level</span>
+          <span class="slider-val" id="ql-stress-val">5</span>
+        </div>
+        <input type="range" min="1" max="10" value="5" id="ql-stress"
+          oninput="document.getElementById('ql-stress-val').textContent=this.value">
+        <div class="slider-ticks"><span>1</span><span>5</span><span>10</span></div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-label">
+          <span>😴 Sleep Quality</span>
+          <span class="slider-val" id="ql-sleep-val">5</span>
+        </div>
+        <input type="range" min="1" max="10" value="5" id="ql-sleep"
+          oninput="document.getElementById('ql-sleep-val').textContent=this.value">
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px;">
+        <div class="toggle-row" style="padding:14px 16px;">
+          <div class="toggle-info"><h4>Active Flare</h4><p>Having a flare-up today</p></div>
+          <div class="toggle" id="ql-flare-toggle" onclick="toggleEl('ql-flare-toggle')"></div>
+        </div>
+        <div class="toggle-row" style="padding:14px 16px;">
+          <div class="toggle-info"><h4>Meds Taken</h4><p>All medications taken</p></div>
+          <div class="toggle" id="ql-meds-toggle" onclick="toggleEl('ql-meds-toggle')"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Note (optional)</label>
+        <textarea id="ql-note" placeholder="Any triggers, observations..."></textarea>
+      </div>
+      <div class="mood-row" style="margin-bottom:16px;">
+        <div class="mood-btn active" data-mood="great" onclick="selectMood(this)">😄<span>Great</span></div>
+        <div class="mood-btn" data-mood="good" onclick="selectMood(this)">🙂<span>Good</span></div>
+        <div class="mood-btn" data-mood="okay" onclick="selectMood(this)">😐<span>Okay</span></div>
+        <div class="mood-btn" data-mood="bad" onclick="selectMood(this)">😕<span>Low</span></div>
+        <div class="mood-btn" data-mood="awful" onclick="selectMood(this)">😞<span>Rough</span></div>
+      </div>
+      <button class="btn btn-primary" onclick="saveQuickLog()">💾 Save Log</button>
+    </div>
+    <div id="ql-success" style="display:none;">
+      <div class="success-anim">
+        <div class="success-circle">✓</div>
+        <h3>Logged!</h3>
+        <p>Your entry has been saved.</p>
+      </div>
+      <button class="btn btn-secondary" onclick="closeSheet('quick-log-overlay')">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- BODY PART SHEET -->
+<div class="overlay" id="body-part-overlay" onclick="closeSheet('body-part-overlay')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="bp-title">Body Area</div>
+
+    <div class="slider-row">
+      <div class="slider-label"><span>🔥 Itch</span><span class="slider-val" id="bp-itch-val">3</span></div>
+      <input type="range" min="1" max="10" value="3" id="bp-itch"
+        oninput="document.getElementById('bp-itch-val').textContent=this.value">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label"><span>🌵 Dryness</span><span class="slider-val" id="bp-dry-val">3</span></div>
+      <input type="range" min="1" max="10" value="3" id="bp-dry"
+        oninput="document.getElementById('bp-dry-val').textContent=this.value">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label"><span>🌹 Redness</span><span class="slider-val" id="bp-red-val">3</span></div>
+      <input type="range" min="1" max="10" value="3" id="bp-red"
+        oninput="document.getElementById('bp-red-val').textContent=this.value">
+    </div>
+
+    <p class="card-title" style="margin-bottom:8px;">Flare Status</p>
+    <div class="flare-chips">
+      <div class="flare-chip flare-active" data-flare="active" onclick="selectFlare(this)">🔴 Active Flare</div>
+      <div class="flare-chip" data-flare="mild" onclick="selectFlare(this)">🟡 Mild</div>
+      <div class="flare-chip active" data-flare="clear" onclick="selectFlare(this)">✅ Clear</div>
+      <div class="flare-chip" data-flare="healing" onclick="selectFlare(this)">💚 Healing</div>
+    </div>
+
+    <div class="field" style="margin-top:16px;">
+      <label>Notes</label>
+      <textarea id="bp-note" placeholder="Observations..."></textarea>
+    </div>
+    <div class="photo-area" onclick="simulatePhoto()">
+      <div style="font-size:28px;">📷</div>
+      <p>Tap to add photo (optional)</p>
+    </div>
+    <div style="height:16px;"></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" style="flex:0.4" onclick="clearBodyPart()">Clear</button>
+      <button class="btn btn-primary" onclick="saveBodyPart()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- MED SHEET -->
+<div class="overlay" id="med-overlay" onclick="closeSheet('med-overlay')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Medications</div>
+    <div id="med-sheet-list"></div>
+    <button class="btn btn-secondary" style="margin-top:12px;" onclick="openSub('pill-tracker');closeSheet('med-overlay')">Manage Medications ›</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SUBSCREENS
+══════════════════════════════════════ -->
+
+<!-- WATER TRACKER SUB -->
+<div class="subscreen" id="sub-water-tracker">
+  <div class="subscreen-header">
+    <button class="back-btn" onclick="closeSub('water-tracker')">‹ Back</button>
+    <h2>💧 Water Tracker</h2>
+  </div>
+  <div class="subscreen-body">
+    <div class="card" style="text-align:center;">
+      <div class="water-display">
+        <div class="water-amount" id="wt-amount">0</div>
+        <div class="water-unit">cups today</div>
+      </div>
+      <div class="progress-bar" style="height:12px;margin:8px 0;">
+        <div class="progress-fill" id="wt-bar" style="width:0%;height:12px;"></div>
+      </div>
+      <p style="font-size:13px;color:var(--text3);">Goal: <span id="wt-goal">8</span> cups</p>
+    </div>
+    <div class="water-btns">
+      <button class="water-btn" onclick="addWater(1)">+1</button>
+      <button class="water-btn" onclick="addWater(2)">+2</button>
+      <button class="water-btn" onclick="addWater(3)">+3</button>
+      <button class="water-btn" onclick="addWater(-1)">-1</button>
+    </div>
+    <div style="height:16px;"></div>
+    <div class="field">
+      <label>Daily Goal (cups)</label>
+      <input type="number" id="wt-goal-input" value="8" min="1" max="20" onchange="setWaterGoal(this.value)">
+    </div>
+    <button class="btn btn-secondary" onclick="resetWater()">🔄 Reset Today</button>
+  </div>
+</div>
+
+<!-- TRIGGER TRACKER SUB -->
+<div class="subscreen" id="sub-trigger-tracker">
+  <div class="subscreen-header">
+    <button class="back-btn" onclick="closeSub('trigger-tracker')">‹ Back</button>
+    <h2>⚡ Trigger Tracker</h2>
+  </div>
+  <div class="subscreen-body">
+    <p style="font-size:14px;color:var(--text2);margin-bottom:16px;">Select triggers that affect your skin today</p>
+    <div id="trigger-chips" class="chip-row" style="flex-direction:column;gap:0;">
+    </div>
+    <div style="height:16px;"></div>
+    <div class="field">
+      <label>Add Custom Trigger</label>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="custom-trigger-input" placeholder="e.g. Hot shower">
+        <button class="btn btn-primary btn-sm" onclick="addCustomTrigger()">Add</button>
+      </div>
+    </div>
+    <div style="height:16px;"></div>
+    <button class="btn btn-primary" onclick="saveTriggers()">Save Triggers</button>
+  </div>
+</div>
+
+<!-- ROUTINE TRACKER SUB -->
+<div class="subscreen" id="sub-routine-tracker">
+  <div class="subscreen-header">
+    <button class="back-btn" onclick="closeSub('routine-tracker')">‹ Back</button>
+    <h2>☀️ Routine Tracker</h2>
+  </div>
+  <div class="subscreen-body">
+    <p class="card-title" style="padding:8px 0 12px;">Morning Routine</p>
+    <div id="am-routine"></div>
+    <p class="card-title" style="padding:16px 0 12px;">Evening Routine</p>
+    <div id="pm-routine"></div>
+    <div style="height:16px;"></div>
+    <div class="field">
+      <label>Add Routine Item</label>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="routine-input" placeholder="e.g. Apply moisturiser">
+        <button class="btn btn-primary btn-sm" onclick="addRoutineItem()">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT TRACKER SUB -->
+<div class="subscreen" id="sub-product-tracker">
+  <div class="subscreen-header">
+    <button class="back-btn" onclick="closeSub('product-tracker')">‹ Back</button>
+    <h2>🧴 Product Tracker</h2>
+  </div>
+  <div class="subscreen-body">
+    <button class="btn btn-primary" style="margin-bottom:16px;" onclick="openAddProduct()">+ Add Product</button>
+    <div id="product-list"></div>
+  </div>
+</div>
+
+<!-- RECIPES SUB -->
+<div class="subscreen" id="sub-recipes">
+  <div class="subscreen-header">
+    <button class="back-btn" onclick="closeSub('recipes')">‹ Back</button>
+    <h2>🌿 Natural Recipes</h2>
+  </div>
+  <div class="subscreen-body">
+    <button class="btn btn-primary" style="margin-bottom:16px;" onclick="openAddRecipe()">+ New Recipe</button>
+    <div id="recipe-list"></div>
+  </div>
+</div>
+
+<!-- PILL TRACKER SUB -->
+<div class="subscreen" id="sub-pill-tracker">
+  <div class="subscreen-header">
+    <button class="back-btn" onclick="closeSub('pill-tracker')">‹ Back</button>
+    <h2>💊 Pill Tracker</h2>
+  </div>
+  <div class="subscreen-body">
+    <div class="adherence-wrap">
+      <div class="adherence-pct" id="adherence-pct">–</div>
+      <div class="adherence-label">Adherence Rate (7 days)</div>
+    </div>
+    <button class="btn btn-primary" style="margin-bottom:16px;" onclick="openAddMed()">+ Add Medication</button>
+    <div id="pill-list"></div>
+  </div>
+</div>
+
+<!-- STRESS TRACKER SUB -->
+<div class="subscreen" id="sub-stress-tracker">
+  <div class="subscreen-header">
+    <button class="back-btn" onclick="closeSub('stress-tracker')">‹ Back</button>
+    <h2>🧠 Stress & Anxiety</h2>
+  </div>
+  <div class="subscreen-body">
+    <div class="card">
+      <div class="slider-row">
+        <div class="slider-label"><span>😤 Stress</span><span class="slider-val" id="st-stress-val">5</span></div>
+        <input type="range" min="1" max="10" value="5" id="st-stress"
+          oninput="document.getElementById('st-stress-val').textContent=this.value">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label"><span>😰 Anxiety</span><span class="slider-val" id="st-anxiety-val">5</span></div>
+        <input type="range" min="1" max="10" value="5" id="st-anxiety"
+          oninput="document.getElementById('st-anxiety-val').textContent=this.value">
+      </div>
+      <p class="card-title" style="margin-bottom:8px;">Mood</p>
+      <div class="mood-row" style="margin-bottom:16px;">
+        <div class="mood-btn" data-mood="great" onclick="selectMood(this,'st')">😄<span>Great</span></div>
+        <div class="mood-btn active" data-mood="good" onclick="selectMood(this,'st')">🙂<span>Good</span></div>
+        <div class="mood-btn" data-mood="okay" onclick="selectMood(this,'st')">😐<span>Okay</span></div>
+        <div class="mood-btn" data-mood="bad" onclick="selectMood(this,'st')">😕<span>Low</span></div>
+        <div class="mood-btn" data-mood="awful" onclick="selectMood(this,'st')">😞<span>Rough</span></div>
+      </div>
+      <div class="field">
+        <label>Stress Triggers</label>
+        <div class="chip-row">
+          <div class="chip pink" onclick="this.classList.toggle('active')">Work</div>
+          <div class="chip pink" onclick="this.classList.toggle('active')">Sleep</div>
+          <div class="chip pink" onclick="this.classList.toggle('active')">Diet</div>
+          <div class="chip pink" onclick="this.classList.toggle('active')">Exercise</div>
+          <div class="chip pink" onclick="this.classList.toggle('active')">Social</div>
+          <div class="chip pink" onclick="this.classList.toggle('active')">Weather</div>
+          <div class="chip pink" onclick="this.classList.toggle('active')">Pain/Itch</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="st-note" placeholder="How are you feeling today?"></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="saveStressLog()">Save Entry</button>
+    </div>
+    <div id="stress-history" style="margin-top:16px;"></div>
+  </div>
+</div>
+
+<!-- ALLERGY TRACKER SUB -->
+<div class="subscreen" id="sub-allergy-tracker">
+  <div class="subscreen-header">
+    <button class="back-btn" onclick="closeSub('allergy-tracker')">‹ Back</button>
+    <h2>🌸 Allergy Tracker</h2>
+  </div>
+  <div class="subscreen-body">
+    <p style="font-size:14px;color:var(--text2);margin-bottom:16px;">Track known allergens and sensitivities</p>
+    <div id="allergy-list"></div>
+    <div style="height:16px;"></div>
+    <div class="field">
+      <label>Add Allergen</label>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="allergy-input" placeholder="e.g. Nickel, Fragrance...">
+        <button class="btn btn-primary btn-sm" onclick="addAllergy()">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS: Notifications -->
+<div class="subscreen" id="sub-settings-notif">
+  <div class="subscreen-header">
+    <button class="back-btn" onclick="closeSub('settings-notif')">‹ Back</button>
+    <h2>🔔 Notifications</h2>
+  </div>
+  <div class="subscreen-body">
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div class="toggle-row" style="padding:16px;">
+        <div class="toggle-info"><h4>Medication Reminders</h4><p>Alert when dose is due</p></div>
+        <div class="toggle on" id="notif-med" onclick="toggleEl('notif-med')"></div>
+      </div>
+      <div class="toggle-row" style="padding:16px;">
+        <div class="toggle-info"><h4>Daily Log Reminder</h4><p>Evening check-in prompt</p></div>
+        <div class="toggle on" id="notif-log" onclick="toggleEl('notif-log')"></div>
+      </div>
+      <div class="toggle-row" style="padding:16px;">
+        <div class="toggle-info"><h4>Water Reminders</h4><p>Hydration nudges</p></div>
+        <div class="toggle" id="notif-water" onclick="toggleEl('notif-water')"></div>
+      </div>
+    </div>
+    <div class="field" style="margin-top:16px;">
+      <label>Quiet Hours From</label>
+      <input type="time" id="quiet-start" value="22:00">
+    </div>
+    <div class="field">
+      <label>Quiet Hours Until</label>
+      <input type="time" id="quiet-end" value="07:00">
+    </div>
+    <button class="btn btn-primary" onclick="saveNotifSettings()">Save Settings</button>
+  </div>
+</div>
+
+<!-- SETTINGS: PIN -->
+<div class="subscreen" id="sub-settings-pin">
+  <div class="subscreen-header">
+    <button class="back-btn" onclick="closeSub('settings-pin')">‹ Back</button>
+    <h2>🔐 Change PIN</h2>
+  </div>
+  <div class="subscreen-body">
+    <div class="card">
+      <p style="font-size:14px;color:var(--text2);margin-bottom:16px;">Set a new 4-digit PIN to secure your data.</p>
+      <div class="field"><label>New PIN</label><input type="password" id="new-pin" maxlength="4" inputmode="numeric" placeholder="••••"></div>
+      <div class="field"><label>Confirm PIN</label><input type="password" id="confirm-pin" maxlength="4" inputmode="numeric" placeholder="••••"></div>
+      <button class="btn btn-primary" onclick="changePin()">Update PIN</button>
+      <div style="height:12px;"></div>
+      <button class="btn btn-ghost" onclick="disablePin()">Disable PIN Lock</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PRODUCT SHEET -->
+<div class="overlay" id="add-product-overlay" onclick="closeSheet('add-product-overlay')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Add Product</div>
+    <div class="field"><label>Product Name</label><input type="text" id="ap-name" placeholder="e.g. CeraVe Moisturising Cream"></div>
+    <div class="field">
+      <label>Category</label>
+      <select id="ap-cat">
+        <option>Cream</option><option>Ointment</option><option>Soap</option>
+        <option>Medication</option><option>Natural Remedy</option><option>Other</option>
+      </select>
+    </div>
+    <div class="field"><label>Body Area Applied</label><input type="text" id="ap-area" placeholder="e.g. Arms, Face"></div>
+    <div class="slider-row">
+      <div class="slider-label"><span>⭐ Effectiveness</span><span class="slider-val" id="ap-eff-val">5</span></div>
+      <input type="range" min="1" max="10" value="5" id="ap-eff"
+        oninput="document.getElementById('ap-eff-val').textContent=this.value">
+    </div>
+    <div class="field">
+      <label>Tags</label>
+      <div class="chip-row">
+        <div class="chip" onclick="this.classList.toggle('active')">Itch Relief</div>
+        <div class="chip" onclick="this.classList.toggle('active')">Hydration</div>
+        <div class="chip" onclick="this.classList.toggle('active')">Burning</div>
+        <div class="chip pink" onclick="this.classList.toggle('active')">Flare Trigger</div>
+        <div class="chip" onclick="this.classList.toggle('active')">Fragrance Free</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="saveProduct()">Save Product</button>
+  </div>
+</div>
+
+<!-- ADD MEDICATION SHEET -->
+<div class="overlay" id="add-med-overlay" onclick="closeSheet('add-med-overlay')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Add Medication</div>
+    <div class="field"><label>Medication Name</label><input type="text" id="am-name" placeholder="e.g. Cetirizine"></div>
+    <div class="field"><label>Dosage (optional)</label><input type="text" id="am-dose" placeholder="e.g. 10mg"></div>
+    <div class="field">
+      <label>Times Per Day</label>
+      <select id="am-freq">
+        <option value="1">Once daily</option>
+        <option value="2">Twice daily</option>
+        <option value="3">Three times daily</option>
+        <option value="4">Four times daily</option>
+      </select>
+    </div>
+    <div class="field"><label>Notes</label><textarea id="am-note" placeholder="Instructions, food requirements..."></textarea></div>
+    <button class="btn btn-primary" onclick="saveMedication()">Add Medication</button>
+  </div>
+</div>
+
+<!-- ADD RECIPE SHEET -->
+<div class="overlay" id="add-recipe-overlay" onclick="closeSheet('add-recipe-overlay')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">New Recipe</div>
+    <div class="field"><label>Recipe Name</label><input type="text" id="ar-name" placeholder="e.g. Oat & Honey Balm"></div>
+    <div class="field"><label>Purpose</label><input type="text" id="ar-purpose" placeholder="e.g. Itch relief, moisturising"></div>
+    <div class="field"><label>Ingredients (one per line)</label><textarea id="ar-ingredients" placeholder="2 tbsp oat flour&#10;1 tbsp raw honey&#10;1 tsp coconut oil"></textarea></div>
+    <div class="field"><label>Steps</label><textarea id="ar-steps" placeholder="1. Mix dry ingredients...&#10;2. Add liquids..."></textarea></div>
+    <div class="field"><label>Target Body Area</label><input type="text" id="ar-area" placeholder="e.g. Face, Arms"></div>
+    <div class="field"><label>Storage Instructions</label><input type="text" id="ar-storage" placeholder="e.g. Refrigerate, use within 3 days"></div>
+    <button class="btn btn-primary" onclick="saveRecipe()">Save Recipe</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// FIREBASE CONFIGURATION
+// ── REPLACE these values with your own
+//    Firebase project config after setup
+// ══════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyCsBuwK5paeD4rsRO1rcEI5nOBNhVcFb8E",
+  authDomain:        "dermacalm-5dea5.firebaseapp.com",
+  projectId:         "dermacalm-5dea5",
+  storageBucket:     "dermacalm-5dea5.firebasestorage.app",
+  messagingSenderId: "887229787279",
+  appId:             "1:887229787279:web:ab35683f64ccaa858954fa"
+};
+
+// ── Firebase state ──
+let firebaseReady = false;
+let fbApp, fbAuth, fbDb;
+let currentUser = null;   // null = not signed in / local mode
+let syncPending = false;
+
+function initFirebase() {
+  try {
+    // Only init if config has been filled in
+    if (FIREBASE_CONFIG.apiKey === 'REPLACE_WITH_YOUR_API_KEY') {
+      console.warn('DermaCalm: Firebase not configured — running in local mode');
+      firebaseReady = false;
+      return;
+    }
+    fbApp  = firebase.initializeApp(FIREBASE_CONFIG);
+    fbAuth = firebase.auth();
+    fbDb   = firebase.firestore();
+    // Enable offline persistence so app works without internet
+    fbDb.enablePersistence({ synchronizeTabs: false })
+        .catch(() => {}); // Ignore if already enabled
+    firebaseReady = true;
+
+    // Listen for auth state changes
+    fbAuth.onAuthStateChanged(user => {
+      currentUser = user;
+      updateAuthUI(user);
+      if (user) {
+        // Signed in — load cloud data then proceed
+        loadCloudData().then(() => {
+          afterAuthReady();
+        });
+      } else {
+        afterAuthReady();
+      }
+    });
+  } catch(e) {
+    console.warn('Firebase init failed:', e);
+    firebaseReady = false;
+    afterAuthReady();
+  }
+}
+
+function afterAuthReady() {
+  // Hide auth screen, show lock screen
+  document.getElementById('auth-screen').classList.add('hidden');
+  initLock();
+}
+
+// ── SIGN IN ──
+async function signInWithGoogle() {
+  if (!firebaseReady) { showToast('Firebase not configured yet'); return; }
+  document.getElementById('auth-error').textContent = '';
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await fbAuth.signInWithPopup(provider);
+    // onAuthStateChanged handles the rest
+  } catch(e) {
+    document.getElementById('auth-error').textContent =
+      e.code === 'auth/popup-closed-by-user'
+        ? 'Sign-in cancelled.'
+        : 'Sign-in failed. Please try again.';
+  }
+}
+
+// ── SKIP (local mode) ──
+function skipAuth() {
+  document.getElementById('auth-screen').classList.add('hidden');
+  initLock();
+}
+
+// ── SIGN OUT ──
+async function signOutUser() {
+  if (!confirm('Sign out? Your data is safely saved to the cloud.')) return;
+  try {
+    await fbAuth.signOut();
+    currentUser = null;
+    updateAuthUI(null);
+    showToast('Signed out');
+  } catch(e) {
+    showToast('Error signing out');
+  }
+}
+
+// ── SHOW AUTH SCREEN ──
+function showAuthScreen() {
+  document.getElementById('auth-screen').classList.remove('hidden');
+}
+
+// ── UPDATE UI FOR AUTH STATE ──
+function updateAuthUI(user) {
+  const nameEl    = document.getElementById('account-name');
+  const emailEl   = document.getElementById('account-email');
+  const initEl    = document.getElementById('user-initials');
+  const avatarEl  = document.getElementById('user-avatar-img');
+  const signInRow = document.getElementById('sign-in-row');
+  const signOutRow= document.getElementById('sign-out-row');
+  const syncBadge = document.getElementById('sync-badge');
+
+  if (user) {
+    const name = user.displayName || user.email || 'Google User';
+    const initials = name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+    nameEl.textContent  = '👤 ' + name;
+    emailEl.textContent = user.email || '';
+    initEl.textContent  = initials;
+    initEl.style.display = 'flex';
+    if (user.photoURL) {
+      avatarEl.src = user.photoURL;
+      avatarEl.style.display = 'block';
+      initEl.style.display = 'none';
+    }
+    signInRow  && (signInRow.style.display  = 'none');
+    signOutRow && (signOutRow.style.display = '');
+    syncBadge.classList.remove('hidden');
+    setSyncStatus('synced');
+  } else {
+    nameEl.textContent  = '👤 Not signed in';
+    emailEl.textContent = 'Local storage only';
+    initEl.style.display = 'none';
+    avatarEl.style.display = 'none';
+    signInRow  && (signInRow.style.display  = '');
+    signOutRow && (signOutRow.style.display = 'none');
+    syncBadge.classList.add('hidden');
+  }
+}
+
+function showUserMenu() {
+  if (currentUser) {
+    if (confirm(`Signed in as ${currentUser.email}\n\nSign out?`)) signOutUser();
+  } else {
+    showAuthScreen();
+  }
+}
+
+// ── SYNC STATUS BADGE ──
+function setSyncStatus(state) {
+  const dot   = document.getElementById('sync-dot');
+  const label = document.getElementById('sync-label');
+  const badge = document.getElementById('sync-badge');
+  dot.className = 'sync-dot';
+  if (state === 'syncing') { dot.classList.add('syncing'); label.textContent = 'Syncing…'; badge.classList.remove('hidden'); }
+  else if (state === 'offline') { dot.classList.add('offline'); label.textContent = 'Offline'; badge.classList.remove('hidden'); }
+  else { label.textContent = 'Synced'; badge.classList.remove('hidden'); setTimeout(()=>badge.classList.add('hidden'), 3000); }
+}
+
+// ── CLOUD SAVE ──
+async function cloudSave(section, data) {
+  if (!firebaseReady || !currentUser) return;
+  setSyncStatus('syncing');
+  try {
+    const ref = fbDb.collection('users').doc(currentUser.uid)
+                    .collection('data').doc(section);
+    await ref.set({ payload: JSON.stringify(data), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    setSyncStatus('synced');
+  } catch(e) {
+    setSyncStatus('offline');
+    syncPending = true;
+  }
+}
+
+// ── CLOUD LOAD ──
+async function loadCloudData() {
+  if (!firebaseReady || !currentUser) return;
+  setSyncStatus('syncing');
+  try {
+    const snap = await fbDb.collection('users').doc(currentUser.uid)
+                           .collection('data').get();
+    if (snap.empty) {
+      // First sign-in — upload existing local data
+      await pushLocalDataToCloud();
+    } else {
+      const merged = defaultData();
+      snap.forEach(doc => {
+        try {
+          const parsed = JSON.parse(doc.data().payload || '{}');
+          Object.assign(merged, parsed);
+        } catch(e) {}
+      });
+      // Preserve pin from local (security — never store pin in cloud)
+      const local = getData();
+      merged.pin = local.pin;
+      merged.pinEnabled = local.pinEnabled;
+      setData(merged);
+    }
+    setSyncStatus('synced');
+  } catch(e) {
+    setSyncStatus('offline');
+  }
+}
+
+// ── PUSH LOCAL → CLOUD ──
+async function pushLocalDataToCloud() {
+  if (!firebaseReady || !currentUser) return;
+  const d = getData();
+  // Never upload PIN to cloud
+  const { pin, pinEnabled, ...safeData } = d;
+  const sections = ['logs','bodyParts','medications','products','recipes',
+                    'triggers','customTriggers','activeTriggers','allergies',
+                    'routineAM','routinePM','routineDone','waterToday',
+                    'waterGoal','waterDate','stressLogs','notifSettings'];
+  for (const section of sections) {
+    if (safeData[section] !== undefined) {
+      await cloudSave(section, { [section]: safeData[section] });
+    }
+  }
+}
+
+// ── ONLINE/OFFLINE DETECTION ──
+window.addEventListener('online',  () => { setSyncStatus('syncing'); if (syncPending) { syncPending=false; pushLocalDataToCloud(); } });
+window.addEventListener('offline', () => setSyncStatus('offline'));
+
+// ══════════════════════════════════════
+// DATA LAYER — enhanced with cloud sync
+// ══════════════════════════════════════
+const DB_KEY = 'dermacalm_v1';
+function getData() {
+  try { return JSON.parse(localStorage.getItem(DB_KEY)) || defaultData(); }
+  catch(e) { return defaultData(); }
+}
+function setData(d) {
+  localStorage.setItem(DB_KEY, JSON.stringify(d));
+  // Async cloud sync — fire and forget, never blocks UI
+  if (firebaseReady && currentUser) {
+    const { pin, pinEnabled, ...safeData } = d;
+    cloudSave('all', safeData);
+  }
+}
+function defaultData() {
+  return {
+    pin: null,
+    pinEnabled: false,
+    logs: [],          // { date, itch, stress, sleep, flare, meds, mood, note }
+    bodyParts: {},     // { partId: { itch, dry, red, flare, note, date } }
+    medications: [],   // { id, name, dose, freq, note, logs: [{date,taken}] }
+    products: [],      // { id, name, cat, area, eff, tags }
+    recipes: [],       // { id, name, purpose, ingredients, steps, area, storage }
+    triggers: [],      // strings
+    customTriggers: [],
+    activeTriggers: [],
+    allergies: [],
+    routineAM: [],
+    routinePM: [],
+    routineDone: {},   // { 'YYYY-MM-DD': [ids] }
+    waterToday: 0,
+    waterGoal: 8,
+    waterDate: '',
+    stressLogs: [],
+    notifSettings: { med: true, log: true, water: false, quietStart: '22:00', quietEnd: '07:00' }
+  };
+}
+
+function saveLog(entry) {
+  const d = getData();
+  const today = todayStr();
+  d.logs = d.logs.filter(l => l.date !== today);
+  d.logs.push({ ...entry, date: today });
+  if (d.logs.length > 365) d.logs = d.logs.slice(-365);
+  setData(d);
+}
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function getTodayLog() {
+  const d = getData();
+  return d.logs.find(l => l.date === todayStr()) || null;
+}
+
+// ══════════════════════════════════════
+// PIN / LOCK
+// ══════════════════════════════════════
+let pinBuffer = '';
+let pinMode = 'unlock'; // unlock | set | confirm
+let pinPending = '';
+
+function initLock() {
+  const d = getData();
+  if (!d.pinEnabled || !d.pin) {
+    // first launch — set PIN
+    pinMode = 'set';
+    document.getElementById('lock-hint').textContent = 'Choose a 4-digit PIN to protect your data';
+    document.getElementById('pin-action').textContent = 'SET';
+    document.querySelector('.lock-logo p').textContent = 'Set up your security PIN';
+  } else {
+    pinMode = 'unlock';
+    document.getElementById('lock-hint').textContent = 'Enter your PIN to unlock';
+  }
+  updatePinDisplay();
+}
+
+function pinPress(v) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += v;
+  updatePinDisplay();
+  if (pinBuffer.length === 4) {
+    setTimeout(() => pinSubmit(), 200);
+  }
+}
+
+function pinClear() {
+  pinBuffer = pinBuffer.slice(0, -1);
+  updatePinDisplay();
+}
+
+function pinAction() {
+  if (pinBuffer.length === 4) pinSubmit();
+}
+
+function updatePinDisplay() {
+  for (let i = 0; i < 4; i++) {
+    const el = document.getElementById('pd' + i);
+    el.classList.toggle('filled', i < pinBuffer.length);
+  }
+}
+
+async function hashPin(pin) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(pin + 'dermacalm_salt');
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function pinSubmit() {
+  const d = getData();
+  if (pinMode === 'unlock') {
+    const h = await hashPin(pinBuffer);
+    if (h === d.pin) {
+      unlockApp();
+    } else {
+      showPinError('Incorrect PIN. Try again.');
+      pinBuffer = '';
+      updatePinDisplay();
+    }
+  } else if (pinMode === 'set') {
+    pinPending = pinBuffer;
+    pinBuffer = '';
+    updatePinDisplay();
+    pinMode = 'confirm';
+    document.getElementById('lock-hint').textContent = 'Confirm your PIN';
+    document.getElementById('pin-error').textContent = '';
+  } else if (pinMode === 'confirm') {
+    if (pinBuffer === pinPending) {
+      const h = await hashPin(pinBuffer);
+      d.pin = h;
+      d.pinEnabled = true;
+      setData(d);
+      unlockApp();
+    } else {
+      showPinError("PINs don't match. Try again.");
+      pinBuffer = ''; pinPending = '';
+      pinMode = 'set';
+      document.getElementById('lock-hint').textContent = 'Choose a 4-digit PIN';
+      updatePinDisplay();
+    }
+  }
+}
+
+function showPinError(msg) {
+  const el = document.getElementById('pin-error');
+  el.textContent = msg;
+  setTimeout(() => el.textContent = '', 2500);
+}
+
+function unlockApp() {
+  document.getElementById('lock-screen').classList.add('hidden');
+  document.getElementById('app').classList.remove('locked');
+  initApp();
+}
+
+// ══════════════════════════════════════
+// APP INIT
+// ══════════════════════════════════════
+function initApp() {
+  refreshHomeScreen();
+  renderBodyMap();
+  renderInsights();
+  renderBodyHistory();
+  setupBodyPartListeners();
+  checkWaterReset();
+  checkReminders();
+}
+
+// ══════════════════════════════════════
+// NAV
+// ══════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (tab === 'log') { openQuickLog(); return; }
+  document.getElementById(tab + '-screen').classList.add('active');
+  document.getElementById('nav-' + tab)?.classList.add('active');
+  if (tab === 'insights') renderInsights();
+  if (tab === 'body') renderBodyHistory();
+}
+
+// ══════════════════════════════════════
+// HOME SCREEN
+// ══════════════════════════════════════
+function refreshHomeScreen() {
+  const now = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('greeting-date').textContent =
+    `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
+
+  const h = now.getHours();
+  const greet = h < 12 ? 'Good Morning 🌿' : h < 17 ? 'Good Afternoon ☀️' : 'Good Evening 🌙';
+  document.getElementById('greeting-text').textContent = greet;
+
+  const log = getTodayLog();
+  document.getElementById('hs-itch').textContent = log ? log.itch : '–';
+  document.getElementById('hs-stress').textContent = log ? log.stress : '–';
+
+  const d = getData();
+  checkWaterReset();
+  const water = d.waterToday || 0;
+  const goal = d.waterGoal || 8;
+  document.getElementById('hs-water').textContent = water;
+  document.getElementById('hs-water-label').textContent = `${water} / ${goal} cups`;
+  document.getElementById('hs-water-bar').style.width = Math.min(100, (water/goal)*100) + '%';
+
+  // meds
+  const meds = d.medications || [];
+  let takenCount = 0, totalMeds = meds.length;
+  meds.forEach(m => {
+    const todayLog = (m.logs || []).find(l => l.date === todayStr());
+    if (todayLog && todayLog.taken) takenCount++;
+  });
+  document.getElementById('hs-meds').textContent = totalMeds ? `${takenCount}/${totalMeds}` : '–';
+
+  // streak
+  let streak = 0;
+  const today = todayStr();
+  let checkDate = new Date();
+  while (true) {
+    const ds = checkDate.toISOString().slice(0,10);
+    if (d.logs.find(l => l.date === ds)) { streak++; checkDate.setDate(checkDate.getDate()-1); }
+    else break;
+    if (streak > 365) break;
+  }
+  document.getElementById('streak-count').textContent = streak;
+
+  // body preview
+  const parts = Object.entries(d.bodyParts || {});
+  if (parts.length) {
+    const flares = parts.filter(([,v]) => v.flare === 'active');
+    const heal = parts.filter(([,v]) => v.flare === 'healing' || v.flare === 'clear');
+    let txt = '';
+    if (flares.length) txt += `🔴 ${flares.length} area${flares.length>1?'s':''} flaring. `;
+    if (heal.length) txt += `💚 ${heal.length} area${heal.length>1?'s':''} healing.`;
+    if (!txt) txt = '✅ All clear.';
+    document.getElementById('body-preview-text').textContent = txt;
+  }
+
+  // alerts
+  renderAlerts(d, log);
+
+  // insight preview
+  renderInsightPreview(d);
+}
+
+function renderAlerts(d, log) {
+  const container = document.getElementById('home-alerts');
+  let html = '';
+  if (!log) {
+    html += `<div class="alert-card warn"><div class="alert-icon">📝</div><p>You haven't logged today yet</p><button class="btn btn-primary btn-sm" onclick="openQuickLog()" style="flex-shrink:0;width:auto;padding:6px 12px;">Log Now</button></div>`;
+  }
+  const meds = d.medications || [];
+  meds.forEach(m => {
+    const tl = (m.logs || []).find(l => l.date === todayStr());
+    if (!tl || !tl.taken) {
+      html += `<div class="alert-card"><div class="alert-icon">💊</div><p>${m.name} not taken today</p></div>`;
+    }
+  });
+  const flares = Object.values(d.bodyParts || {}).filter(v => v.flare === 'active');
+  if (flares.length) {
+    html += `<div class="alert-card"><div class="alert-icon">⚠️</div><p>${flares.length} active flare area${flares.length>1?'s':''} logged</p></div>`;
+  }
+  container.innerHTML = html;
+}
+
+function renderInsightPreview(d) {
+  const logs = d.logs || [];
+  if (logs.length < 3) return;
+  const recent = logs.slice(-7);
+  const avgIitch = recent.reduce((s,l) => s + (l.itch||0), 0) / recent.length;
+  const stressed = recent.filter(l => l.stress >= 7);
+  const flared = recent.filter(l => l.flare);
+  let insight = '';
+  if (stressed.length >= 2 && flared.length >= 2) {
+    insight = '📊 High stress days seem to coincide with flare-ups this week. Try to prioritise rest.';
+  } else if (avgIitch < 4) {
+    insight = '🌿 Itch levels have been low this week — keep up whatever you\'re doing!';
+  } else if (avgIitch > 7) {
+    insight = '⚠️ Itch has been elevated this week. Check triggers and hydration levels.';
+  } else {
+    insight = `📈 Average itch level: ${avgIitch.toFixed(1)}/10 over the last ${recent.length} entries.`;
+  }
+  document.getElementById('insight-preview').textContent = insight;
+}
+
+// ══════════════════════════════════════
+// QUICK LOG
+// ══════════════════════════════════════
+let selectedMood = 'great';
+function openQuickLog() {
+  const log = getTodayLog();
+  if (log) {
+    document.getElementById('ql-title').textContent = 'Update Today\'s Log';
+    document.getElementById('ql-itch').value = log.itch || 5;
+    document.getElementById('ql-itch-val').textContent = log.itch || 5;
+    document.getElementById('ql-stress').value = log.stress || 5;
+    document.getElementById('ql-stress-val').textContent = log.stress || 5;
+    if (log.flare) document.getElementById('ql-flare-toggle').classList.add('on');
+    if (log.meds) document.getElementById('ql-meds-toggle').classList.add('on');
+    if (log.note) document.getElementById('ql-note').value = log.note;
+    selectedMood = log.mood || 'great';
+  } else {
+    document.getElementById('ql-title').textContent = 'Quick Log';
+    document.getElementById('ql-itch').value = 5;
+    document.getElementById('ql-itch-val').textContent = 5;
+    document.getElementById('ql-stress').value = 5;
+    document.getElementById('ql-stress-val').textContent = 5;
+    document.getElementById('ql-flare-toggle').classList.remove('on');
+    document.getElementById('ql-meds-toggle').classList.remove('on');
+    document.getElementById('ql-note').value = '';
+  }
+  document.getElementById('ql-body').style.display = 'block';
+  document.getElementById('ql-success').style.display = 'none';
+  document.getElementById('quick-log-overlay').classList.add('open');
+}
+
+function saveQuickLog() {
+  const entry = {
+    itch: parseInt(document.getElementById('ql-itch').value),
+    stress: parseInt(document.getElementById('ql-stress').value),
+    sleep: parseInt(document.getElementById('ql-sleep').value),
+    flare: document.getElementById('ql-flare-toggle').classList.contains('on'),
+    meds: document.getElementById('ql-meds-toggle').classList.contains('on'),
+    mood: selectedMood,
+    note: document.getElementById('ql-note').value
+  };
+  saveLog(entry);
+  document.getElementById('ql-body').style.display = 'none';
+  document.getElementById('ql-success').style.display = 'block';
+  refreshHomeScreen();
+  renderInsights();
+  showToast('✓ Log saved');
+}
+
+function selectMood(el, prefix) {
+  const container = el.closest('.mood-row');
+  container.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  if (!prefix) selectedMood = el.dataset.mood;
+}
+
+// ══════════════════════════════════════
+// BODY MAP
+// ══════════════════════════════════════
+let currentBodyPart = null;
+let bodyFront = true;
+
+function setBodySide(side) {
+  bodyFront = side === 'front';
+  document.getElementById('body-front').setAttribute('display', bodyFront ? '' : 'none');
+  document.getElementById('body-back').setAttribute('display', bodyFront ? 'none' : '');
+  document.getElementById('bt-front').classList.toggle('active', bodyFront);
+  document.getElementById('bt-back').classList.toggle('active', !bodyFront);
+}
+
+function setupBodyPartListeners() {
+  document.querySelectorAll('.body-part').forEach(el => {
+    el.addEventListener('click', function() {
+      currentBodyPart = this.dataset.part;
+      openBodyPartSheet(this.dataset.part, this.dataset.label);
+    });
+  });
+}
+
+function openBodyPartSheet(part, label) {
+  document.getElementById('bp-title').textContent = label;
+  const d = getData();
+  const existing = d.bodyParts[part] || {};
+  document.getElementById('bp-itch').value = existing.itch || 3;
+  document.getElementById('bp-itch-val').textContent = existing.itch || 3;
+  document.getElementById('bp-dry').value = existing.dry || 3;
+  document.getElementById('bp-dry-val').textContent = existing.dry || 3;
+  document.getElementById('bp-red').value = existing.red || 3;
+  document.getElementById('bp-red-val').textContent = existing.red || 3;
+  document.getElementById('bp-note').value = existing.note || '';
+
+  // set flare chip
+  const flareVal = existing.flare || 'clear';
+  document.querySelectorAll('.flare-chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.flare === flareVal);
+  });
+
+  document.getElementById('body-part-overlay').classList.add('open');
+}
+
+function selectFlare(el) {
+  document.querySelectorAll('.flare-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function saveBodyPart() {
+  if (!currentBodyPart) return;
+  const flareEl = document.querySelector('.flare-chip.active');
+  const flare = flareEl ? flareEl.dataset.flare : 'clear';
+  const d = getData();
+  d.bodyParts[currentBodyPart] = {
+    itch: parseInt(document.getElementById('bp-itch').value),
+    dry: parseInt(document.getElementById('bp-dry').value),
+    red: parseInt(document.getElementById('bp-red').value),
+    flare,
+    note: document.getElementById('bp-note').value,
+    date: todayStr()
+  };
+  setData(d);
+  renderBodyMap();
+  renderBodyHistory();
+  refreshHomeScreen();
+  closeSheet('body-part-overlay');
+  showToast('✓ Area updated');
+}
+
+function clearBodyPart() {
+  if (!currentBodyPart) return;
+  const d = getData();
+  delete d.bodyParts[currentBodyPart];
+  setData(d);
+  renderBodyMap();
+  renderBodyHistory();
+  closeSheet('body-part-overlay');
+  showToast('Area cleared');
+}
+
+function renderBodyMap() {
+  const d = getData();
+  document.querySelectorAll('.body-part').forEach(el => {
+    const part = el.dataset.part;
+    const info = d.bodyParts[part];
+    el.classList.remove('flare', 'irritated', 'healed');
+    if (info) {
+      if (info.flare === 'active') el.classList.add('flare');
+      else if (info.flare === 'mild') el.classList.add('irritated');
+      else if (info.flare === 'healing' || info.flare === 'clear') el.classList.add('healed');
+    }
+  });
+}
+
+function renderBodyHistory() {
+  const d = getData();
+  const parts = Object.entries(d.bodyParts || {});
+  const container = document.getElementById('body-log-list');
+  if (!parts.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">🧍</div><p>Tap a body area to log symptoms</p></div>';
+    return;
+  }
+  container.innerHTML = parts.map(([part, info]) => `
+    <div class="log-item" onclick="openBodyPartSheet('${part}','${part.replace(/_/g,' ')}')">
+      <div class="log-dot" style="background:${info.flare==='active'?'var(--alert)':info.flare==='healing'?'var(--green)':'var(--sage)'}"></div>
+      <div>
+        <p style="font-size:14px;font-weight:500;">${part.replace(/_/g,' ')}</p>
+        <p style="font-size:12px;color:var(--text3);">Itch: ${info.itch} • ${info.flare}</p>
+      </div>
+      <span class="log-time">${info.date}</span>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════
+// INSIGHTS
+// ══════════════════════════════════════
+function renderInsights() {
+  const d = getData();
+  const logs = d.logs || [];
+
+  // Week chart
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const today = new Date();
+  let chartHtml = '', daysHtml = '';
+  for (let i = 6; i >= 0; i--) {
+    const dt = new Date(today);
+    dt.setDate(dt.getDate() - i);
+    const ds = dt.toISOString().slice(0,10);
+    const log = logs.find(l => l.date === ds);
+    const val = log ? log.itch : 0;
+    const h = val ? Math.max(8, (val/10)*48) : 4;
+    const col = val > 7 ? 'var(--alert)' : val > 4 ? 'var(--yellow)' : 'var(--sage-light)';
+    chartHtml += `<div class="week-bar" style="height:${h}px;background:${col}"></div>`;
+    daysHtml += `<span>${days[(dt.getDay()+6)%7]}</span>`;
+  }
+  document.getElementById('week-chart').innerHTML = chartHtml;
+  document.getElementById('week-days').innerHTML = daysHtml;
+
+  // Insight cards
+  const container = document.getElementById('insights-list');
+  if (logs.length < 3) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div><p>Log for 3+ days to unlock insights</p></div>`;
+    return;
+  }
+  const recent7 = logs.slice(-7);
+  const avgIitch = recent7.reduce((s,l) => s+(l.itch||0),0)/recent7.length;
+  const avgStress = recent7.reduce((s,l) => s+(l.stress||0),0)/recent7.length;
+  const flareCount = recent7.filter(l => l.flare).length;
+  const missedMeds = recent7.filter(l => !l.meds).length;
+  const highStressDays = recent7.filter(l => l.stress >= 7);
+  const highStressFlares = highStressDays.filter(l => l.flare).length;
+  const stressFlareCorr = highStressDays.length ? (highStressFlares/highStressDays.length) : 0;
+
+  let cards = '';
+  if (stressFlareCorr > 0.5) {
+    cards += `<div class="insight-card fade-in"><div class="insight-icon">📈</div><div class="insight-title">Stress → Flares</div><div class="insight-body">${Math.round(stressFlareCorr*100)}% of high-stress days had flare-ups this week. Managing stress may reduce outbreaks.</div></div>`;
+  }
+  if (avgIitch <= 3) {
+    cards += `<div class="insight-card fade-in" style="background:linear-gradient(135deg,#dceede,#a8c5ab);color:var(--text);"><div class="insight-icon">🌿</div><div class="insight-title">Great Week!</div><div class="insight-body">Average itch is ${avgIitch.toFixed(1)}/10 — one of your better weeks. Keep up your current routine.</div></div>`;
+  } else if (avgIitch > 6) {
+    cards += `<div class="insight-card pink-grad fade-in"><div class="insight-icon">⚠️</div><div class="insight-title">Elevated Itch</div><div class="insight-body">Average itch ${avgIitch.toFixed(1)}/10 this week. Consider reviewing recent triggers and product changes.</div></div>`;
+  }
+  if (missedMeds >= 3) {
+    cards += `<div class="insight-card yellow-grad fade-in"><div class="insight-icon">💊</div><div class="insight-title">Missed Medications</div><div class="insight-body">You missed medications on ${missedMeds} of the last 7 days. Consistent dosing often improves symptoms.</div></div>`;
+  }
+  if (!cards) {
+    cards = `<div class="insight-card fade-in"><div class="insight-icon">📊</div><div class="insight-title">Tracking Well</div><div class="insight-body">Avg itch: ${avgIitch.toFixed(1)} • Avg stress: ${avgStress.toFixed(1)} • ${flareCount} flare day${flareCount!==1?'s':''} this week.</div></div>`;
+  }
+  container.innerHTML = cards;
+
+  // Weekly summary
+  const totalLogs = logs.length;
+  const bestDay = logs.reduce((b,l) => !b || l.itch < b.itch ? l : b, null);
+  let summary = `Total logged days: ${totalLogs}\n`;
+  if (bestDay) summary += `Best recent day: ${bestDay.date} (itch: ${bestDay.itch})\n`;
+  summary += `This week: ${flareCount} flare day${flareCount!==1?'s':''}, avg itch ${avgIitch.toFixed(1)}/10`;
+  document.getElementById('weekly-summary-text').textContent = summary;
+}
+
+// ══════════════════════════════════════
+// MEDICATIONS
+// ══════════════════════════════════════
+function openMedSheet() {
+  renderMedSheet();
+  document.getElementById('med-overlay').classList.add('open');
+}
+
+function renderMedSheet() {
+  const d = getData();
+  const meds = d.medications || [];
+  const container = document.getElementById('med-sheet-list');
+  if (!meds.length) {
+    container.innerHTML = '<div class="empty-state" style="padding:24px;"><div class="empty-icon">💊</div><p>No medications added yet</p></div>';
+    return;
+  }
+  container.innerHTML = meds.map(m => {
+    const tl = (m.logs || []).find(l => l.date === todayStr());
+    const taken = tl && tl.taken;
+    return `<div class="med-card">
+      <div class="med-icon">💊</div>
+      <div class="med-info"><h4>${m.name}</h4><p>${m.dose || ''} • ${m.freq}x daily</p></div>
+      <div>
+        ${taken
+          ? '<span class="med-badge taken">✓ Taken</span>'
+          : `<button class="btn btn-primary btn-sm" onclick="markMedTaken('${m.id}')">Take</button>`
+        }
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function markMedTaken(id) {
+  const d = getData();
+  const med = d.medications.find(m => m.id === id);
+  if (!med) return;
+  med.logs = med.logs || [];
+  med.logs = med.logs.filter(l => l.date !== todayStr());
+  med.logs.push({ date: todayStr(), taken: true });
+  setData(d);
+  renderMedSheet();
+  refreshHomeScreen();
+  renderPillTracker();
+  showToast('💊 Medication marked taken');
+}
+
+function openAddMed() {
+  document.getElementById('am-name').value = '';
+  document.getElementById('am-dose').value = '';
+  document.getElementById('am-note').value = '';
+  document.getElementById('add-med-overlay').classList.add('open');
+}
+
+function saveMedication() {
+  const name = document.getElementById('am-name').value.trim();
+  if (!name) { showToast('Please enter a medication name'); return; }
+  const d = getData();
+  d.medications = d.medications || [];
+  d.medications.push({
+    id: Date.now().toString(),
+    name,
+    dose: document.getElementById('am-dose').value,
+    freq: parseInt(document.getElementById('am-freq').value),
+    note: document.getElementById('am-note').value,
+    logs: []
+  });
+  setData(d);
+  closeSheet('add-med-overlay');
+  renderPillTracker();
+  refreshHomeScreen();
+  showToast('💊 Medication added');
+}
+
+function renderPillTracker() {
+  const d = getData();
+  const meds = d.medications || [];
+  const container = document.getElementById('pill-list');
+  if (!meds.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">💊</div><p>No medications yet</p></div>';
+  } else {
+    container.innerHTML = meds.map(m => {
+      const logs7 = [];
+      for (let i = 6; i >= 0; i--) {
+        const dt = new Date(); dt.setDate(dt.getDate()-i);
+        const ds = dt.toISOString().slice(0,10);
+        const tl = (m.logs||[]).find(l => l.date === ds);
+        logs7.push(tl && tl.taken ? 1 : 0);
+      }
+      const taken7 = logs7.reduce((s,v)=>s+v,0);
+      const tl = (m.logs||[]).find(l => l.date === todayStr());
+      const taken = tl && tl.taken;
+      return `<div class="med-card">
+        <div class="med-icon">💊</div>
+        <div class="med-info">
+          <h4>${m.name}</h4>
+          <p>${m.dose||''} • 7-day: ${taken7}/7</p>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          ${taken
+            ? '<span class="med-badge taken">✓ Today</span>'
+            : `<button class="btn btn-primary btn-sm" onclick="markMedTaken('${m.id}')">Take</button>`
+          }
+          <button class="btn btn-ghost btn-sm" onclick="deleteMed('${m.id}')" style="color:var(--alert);font-size:12px;padding:2px 8px;">Remove</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  // adherence
+  const allLogs = meds.flatMap(m => m.logs || []).filter(l => {
+    const dt = new Date(); dt.setDate(dt.getDate()-6);
+    return l.date >= dt.toISOString().slice(0,10);
+  });
+  const possible = meds.reduce((s,m) => s + Math.min(7, m.logs ? m.logs.length : 0) + 7, 0);
+  const taken = allLogs.filter(l => l.taken).length;
+  const pct = meds.length ? Math.round((taken / Math.max(1, meds.length * 7)) * 100) : null;
+  document.getElementById('adherence-pct').textContent = pct !== null ? pct + '%' : '–';
+}
+
+function deleteMed(id) {
+  const d = getData();
+  d.medications = (d.medications||[]).filter(m => m.id !== id);
+  setData(d);
+  renderPillTracker();
+  refreshHomeScreen();
+  showToast('Medication removed');
+}
+
+// ══════════════════════════════════════
+// WATER TRACKER
+// ══════════════════════════════════════
+function checkWaterReset() {
+  const d = getData();
+  if (d.waterDate !== todayStr()) {
+    d.waterToday = 0;
+    d.waterDate = todayStr();
+    setData(d);
+  }
+}
+
+function addWater(n) {
+  const d = getData();
+  checkWaterReset();
+  d.waterToday = Math.max(0, (d.waterToday||0) + n);
+  setData(d);
+  updateWaterUI();
+  refreshHomeScreen();
+}
+
+function setWaterGoal(v) {
+  const d = getData();
+  d.waterGoal = parseInt(v) || 8;
+  setData(d);
+  updateWaterUI();
+}
+
+function resetWater() {
+  const d = getData();
+  d.waterToday = 0;
+  d.waterDate = todayStr();
+  setData(d);
+  updateWaterUI();
+  refreshHomeScreen();
+}
+
+function updateWaterUI() {
+  const d = getData();
+  const w = d.waterToday||0, g = d.waterGoal||8;
+  document.getElementById('wt-amount').textContent = w;
+  document.getElementById('wt-goal').textContent = g;
+  document.getElementById('wt-goal-input').value = g;
+  document.getElementById('wt-bar').style.width = Math.min(100,(w/g)*100) + '%';
+}
+
+// ══════════════════════════════════════
+// TRIGGERS
+// ══════════════════════════════════════
+const DEFAULT_TRIGGERS = [
+  'Heat','Cold weather','Sweat','Stress','Lack of sleep','Fragrance',
+  'Wool/synthetic fabrics','Certain foods','Detergent','Pet dander',
+  'Pollen','Dust mites','Alcohol','Smoking','Hormones'
+];
+
+function renderTriggerTracker() {
+  const d = getData();
+  const all = [...DEFAULT_TRIGGERS, ...(d.customTriggers||[])];
+  const active = d.activeTriggers || [];
+  document.getElementById('trigger-chips').innerHTML = all.map(t => `
+    <div class="toggle-row">
+      <div class="toggle-info"><h4>${t}</h4></div>
+      <div class="toggle ${active.includes(t)?'on':''}" data-trigger="${t}" onclick="toggleTrigger(this,'${t}')"></div>
+    </div>
+  `).join('');
+}
+
+function toggleTrigger(el, name) {
+  el.classList.toggle('on');
+}
+
+function saveTriggers() {
+  const d = getData();
+  const active = [];
+  document.querySelectorAll('#trigger-chips .toggle.on').forEach(t => active.push(t.dataset.trigger));
+  d.activeTriggers = active;
+  setData(d);
+  showToast(`✓ ${active.length} trigger${active.length!==1?'s':''} saved`);
+  closeSub('trigger-tracker');
+}
+
+function addCustomTrigger() {
+  const val = document.getElementById('custom-trigger-input').value.trim();
+  if (!val) return;
+  const d = getData();
+  d.customTriggers = d.customTriggers || [];
+  if (!d.customTriggers.includes(val)) d.customTriggers.push(val);
+  setData(d);
+  document.getElementById('custom-trigger-input').value = '';
+  renderTriggerTracker();
+}
+
+// ══════════════════════════════════════
+// ROUTINE TRACKER
+// ══════════════════════════════════════
+const DEFAULT_AM = ['Gentle cleanser','Apply moisturiser','Sunscreen (SPF30+)'];
+const DEFAULT_PM = ['Remove makeup/cleanse','Apply emollient','Take evening medication'];
+
+function renderRoutineTracker() {
+  const d = getData();
+  const today = todayStr();
+  const done = (d.routineDone || {})[today] || [];
+  const am = d.routineAM && d.routineAM.length ? d.routineAM : DEFAULT_AM;
+  const pm = d.routinePM && d.routinePM.length ? d.routinePM : DEFAULT_PM;
+
+  document.getElementById('am-routine').innerHTML = am.map((item, i) => {
+    const id = 'am_' + i;
+    const isDone = done.includes(id);
+    return `<div class="routine-item">
+      <div class="routine-check ${isDone?'done':''}" onclick="toggleRoutine('${id}', this)">
+        ${isDone ? '✓' : ''}
+      </div>
+      <span style="font-size:14px;">${item}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('pm-routine').innerHTML = pm.map((item, i) => {
+    const id = 'pm_' + i;
+    const isDone = done.includes(id);
+    return `<div class="routine-item">
+      <div class="routine-check ${isDone?'done':''}" onclick="toggleRoutine('${id}', this)">
+        ${isDone ? '✓' : ''}
+      </div>
+      <span style="font-size:14px;">${item}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleRoutine(id, el) {
+  const d = getData();
+  const today = todayStr();
+  d.routineDone = d.routineDone || {};
+  d.routineDone[today] = d.routineDone[today] || [];
+  const idx = d.routineDone[today].indexOf(id);
+  if (idx >= 0) { d.routineDone[today].splice(idx,1); el.classList.remove('done'); el.textContent=''; }
+  else { d.routineDone[today].push(id); el.classList.add('done'); el.textContent='✓'; }
+  setData(d);
+}
+
+function addRoutineItem() {
+  const val = document.getElementById('routine-input').value.trim();
+  if (!val) return;
+  const d = getData();
+  d.routinePM = d.routinePM && d.routinePM.length ? d.routinePM : [...DEFAULT_PM];
+  d.routinePM.push(val);
+  setData(d);
+  document.getElementById('routine-input').value = '';
+  renderRoutineTracker();
+}
+
+// ══════════════════════════════════════
+// PRODUCTS
+// ══════════════════════════════════════
+function openAddProduct() {
+  document.getElementById('ap-name').value = '';
+  document.getElementById('ap-area').value = '';
+  document.getElementById('ap-eff').value = 5;
+  document.getElementById('ap-eff-val').textContent = 5;
+  document.querySelectorAll('#add-product-overlay .chip').forEach(c => c.classList.remove('active'));
+  document.getElementById('add-product-overlay').classList.add('open');
+}
+
+function saveProduct() {
+  const name = document.getElementById('ap-name').value.trim();
+  if (!name) { showToast('Please enter a product name'); return; }
+  const d = getData();
+  d.products = d.products || [];
+  const tags = [];
+  document.querySelectorAll('#add-product-overlay .chip.active').forEach(c => tags.push(c.textContent));
+  d.products.push({
+    id: Date.now().toString(),
+    name,
+    cat: document.getElementById('ap-cat').value,
+    area: document.getElementById('ap-area').value,
+    eff: parseInt(document.getElementById('ap-eff').value),
+    tags
+  });
+  setData(d);
+  closeSheet('add-product-overlay');
+  renderProductTracker();
+  showToast('✓ Product saved');
+}
+
+function renderProductTracker() {
+  const d = getData();
+  const products = d.products || [];
+  const container = document.getElementById('product-list');
+  if (!products.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">🧴</div><p>No products added yet</p></div>';
+    return;
+  }
+  container.innerHTML = products.map(p => `
+    <div class="product-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <h4 style="font-size:15px;font-weight:600;">${p.name}</h4>
+        <span style="font-size:11px;color:var(--text3);background:var(--bg2);padding:3px 10px;border-radius:10px;">${p.cat}</span>
+      </div>
+      <p style="font-size:12px;color:var(--text3);margin-top:4px;">${p.area||'No area specified'}</p>
+      <div class="product-rating">${'⭐'.repeat(Math.min(5,Math.round(p.eff/2)))}</div>
+      <div style="margin-top:8px;">${(p.tags||[]).map(t=>`<span class="chip active" style="font-size:11px;padding:3px 10px;">${t}</span>`).join('')}</div>
+      <button class="btn btn-ghost" style="color:var(--alert);font-size:12px;padding:6px 0;width:auto;margin-top:8px;" onclick="deleteProduct('${p.id}')">Remove</button>
+    </div>
+  `).join('');
+}
+
+function deleteProduct(id) {
+  const d = getData();
+  d.products = (d.products||[]).filter(p => p.id !== id);
+  setData(d);
+  renderProductTracker();
+  showToast('Product removed');
+}
+
+// ══════════════════════════════════════
+// RECIPES
+// ══════════════════════════════════════
+function openAddRecipe() {
+  ['ar-name','ar-purpose','ar-ingredients','ar-steps','ar-area','ar-storage'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('add-recipe-overlay').classList.add('open');
+}
+
+function saveRecipe() {
+  const name = document.getElementById('ar-name').value.trim();
+  if (!name) { showToast('Please enter a recipe name'); return; }
+  const d = getData();
+  d.recipes = d.recipes || [];
+  d.recipes.push({
+    id: Date.now().toString(),
+    name,
+    purpose: document.getElementById('ar-purpose').value,
+    ingredients: document.getElementById('ar-ingredients').value,
+    steps: document.getElementById('ar-steps').value,
+    area: document.getElementById('ar-area').value,
+    storage: document.getElementById('ar-storage').value
+  });
+  setData(d);
+  closeSheet('add-recipe-overlay');
+  renderRecipes();
+  showToast('🌿 Recipe saved');
+}
+
+function renderRecipes() {
+  const d = getData();
+  const recipes = d.recipes || [];
+  const container = document.getElementById('recipe-list');
+  if (!recipes.length) {
+    container.innerHTML = `
+      <div class="recipe-card" style="background:var(--bg2);">
+        <h4 style="font-size:15px;font-weight:600;">🌱 Oat & Honey Soothing Balm</h4>
+        <p style="font-size:12px;color:var(--text3);margin-top:4px;">Itch relief • Face & Arms</p>
+        <div style="margin-top:10px;font-size:13px;color:var(--text2);line-height:1.7;">
+          <strong>Ingredients:</strong> 2 tbsp colloidal oat, 1 tbsp raw honey, 1 tsp coconut oil<br>
+          <strong>Steps:</strong> Mix all together. Apply thin layer to affected area.<br>
+          <strong>Storage:</strong> Refrigerate up to 3 days
+        </div>
+        <span class="recipe-tag">Sample Recipe</span>
+      </div>
+      <div class="empty-state" style="padding:20px;"><p>Add your own recipes above</p></div>`;
+    return;
+  }
+  container.innerHTML = recipes.map(r => `
+    <div class="recipe-card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <h4 style="font-size:15px;font-weight:600;">🌿 ${r.name}</h4>
+        <button onclick="deleteRecipe('${r.id}')" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;">×</button>
+      </div>
+      <p style="font-size:12px;color:var(--text3);margin-top:4px;">${r.purpose||''} ${r.area ? '• ' + r.area : ''}</p>
+      ${r.ingredients ? `<p style="font-size:13px;color:var(--text2);margin-top:8px;"><strong>Ingredients:</strong><br>${r.ingredients.replace(/\n/g,'<br>')}</p>` : ''}
+      ${r.steps ? `<p style="font-size:13px;color:var(--text2);margin-top:8px;"><strong>Steps:</strong><br>${r.steps.replace(/\n/g,'<br>')}</p>` : ''}
+      ${r.storage ? `<span class="recipe-tag">🗄️ ${r.storage}</span>` : ''}
+    </div>
+  `).join('');
+}
+
+function deleteRecipe(id) {
+  const d = getData();
+  d.recipes = (d.recipes||[]).filter(r => r.id !== id);
+  setData(d);
+  renderRecipes();
+}
+
+// ══════════════════════════════════════
+// STRESS TRACKER
+// ══════════════════════════════════════
+function saveStressLog() {
+  const d = getData();
+  d.stressLogs = d.stressLogs || [];
+  const moodEl = document.querySelector('#sub-stress-tracker .mood-btn.active');
+  const triggers = [];
+  document.querySelectorAll('#sub-stress-tracker .chip.active').forEach(c => triggers.push(c.textContent));
+  d.stressLogs.push({
+    date: todayStr(),
+    stress: parseInt(document.getElementById('st-stress').value),
+    anxiety: parseInt(document.getElementById('st-anxiety').value),
+    mood: moodEl ? moodEl.dataset.mood : 'good',
+    triggers,
+    note: document.getElementById('st-note').value
+  });
+  if (d.stressLogs.length > 90) d.stressLogs = d.stressLogs.slice(-90);
+  setData(d);
+  renderStressHistory();
+  showToast('✓ Stress log saved');
+}
+
+function renderStressHistory() {
+  const d = getData();
+  const logs = (d.stressLogs||[]).slice(-5).reverse();
+  const container = document.getElementById('stress-history');
+  if (!logs.length) { container.innerHTML = ''; return; }
+  container.innerHTML = '<div class="card-title">Recent Entries</div>' + logs.map(l => `
+    <div class="log-item">
+      <div class="log-dot" style="background:${l.stress>6?'var(--alert)':'var(--sage)'}"></div>
+      <div><p style="font-size:14px;">Stress: ${l.stress} • Anxiety: ${l.anxiety}</p>
+      <p style="font-size:12px;color:var(--text3);">${l.mood} ${l.triggers && l.triggers.length ? '• ' + l.triggers.join(', ') : ''}</p></div>
+      <span class="log-time">${l.date}</span>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════
+// ALLERGIES
+// ══════════════════════════════════════
+function renderAllergyTracker() {
+  const d = getData();
+  const list = d.allergies || [];
+  const container = document.getElementById('allergy-list');
+  if (!list.length) {
+    container.innerHTML = '<div class="empty-state" style="padding:20px;"><p>No allergens added yet</p></div>';
+    return;
+  }
+  container.innerHTML = list.map((a, i) => `
+    <div class="log-item">
+      <div class="log-dot" style="background:var(--pink)"></div>
+      <p style="font-size:14px;flex:1;">${a}</p>
+      <button onclick="removeAllergy(${i})" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;">×</button>
+    </div>
+  `).join('');
+}
+
+function addAllergy() {
+  const val = document.getElementById('allergy-input').value.trim();
+  if (!val) return;
+  const d = getData();
+  d.allergies = d.allergies || [];
+  if (!d.allergies.includes(val)) { d.allergies.push(val); setData(d); }
+  document.getElementById('allergy-input').value = '';
+  renderAllergyTracker();
+  showToast('Allergen added');
+}
+
+function removeAllergy(i) {
+  const d = getData();
+  d.allergies.splice(i, 1);
+  setData(d);
+  renderAllergyTracker();
+}
+
+// ══════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════
+function saveNotifSettings() {
+  const d = getData();
+  d.notifSettings = {
+    med: document.getElementById('notif-med').classList.contains('on'),
+    log: document.getElementById('notif-log').classList.contains('on'),
+    water: document.getElementById('notif-water').classList.contains('on'),
+    quietStart: document.getElementById('quiet-start').value,
+    quietEnd: document.getElementById('quiet-end').value
+  };
+  setData(d);
+  showToast('✓ Settings saved');
+  closeSub('settings-notif');
+}
+
+async function changePin() {
+  const np = document.getElementById('new-pin').value;
+  const cp = document.getElementById('confirm-pin').value;
+  if (np.length !== 4 || !/^\d{4}$/.test(np)) { showToast('PIN must be 4 digits'); return; }
+  if (np !== cp) { showToast("PINs don't match"); return; }
+  const h = await hashPin(np);
+  const d = getData();
+  d.pin = h; d.pinEnabled = true;
+  setData(d);
+  showToast('✓ PIN updated');
+  closeSub('settings-pin');
+}
+
+function disablePin() {
+  if (!confirm('Disable PIN lock?')) return;
+  const d = getData();
+  d.pinEnabled = false;
+  setData(d);
+  showToast('PIN lock disabled');
+  closeSub('settings-pin');
+}
+
+function exportData() {
+  const d = getData();
+  const blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `dermacalm_export_${todayStr()}.json`;
+  a.click(); URL.revokeObjectURL(url);
+  showToast('📤 Data exported');
+}
+
+function confirmReset() {
+  if (!confirm('Reset ALL data? This cannot be undone.')) return;
+  if (!confirm('Are you absolutely sure? All logs, medications and settings will be deleted.')) return;
+  localStorage.removeItem(DB_KEY);
+  location.reload();
+}
+
+// ══════════════════════════════════════
+// REMINDERS / CHECK-IN
+// ══════════════════════════════════════
+function checkReminders() {
+  const d = getData();
+  const ns = d.notifSettings || {};
+  if (ns.med !== false) {
+    const meds = d.medications || [];
+    const missed = meds.filter(m => {
+      const tl = (m.logs||[]).find(l => l.date === todayStr());
+      return !tl || !tl.taken;
+    });
+    if (missed.length) {
+      setTimeout(() => {
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('DermaCalm 💊', { body: `${missed.length} medication${missed.length>1?'s':''} not taken today`, icon: 'icons/icon-192.png' });
+        }
+      }, 2000);
+    }
+  }
+  // Request notification permission
+  if ('Notification' in window && Notification.permission === 'default') {
+    setTimeout(() => Notification.requestPermission(), 3000);
+  }
+}
+
+// ══════════════════════════════════════
+// SUBSCREEN SYSTEM
+// ══════════════════════════════════════
+function openSub(name) {
+  const el = document.getElementById('sub-' + name);
+  if (!el) return;
+  el.classList.add('open');
+  // Render sub content
+  if (name === 'water-tracker') updateWaterUI();
+  if (name === 'trigger-tracker') renderTriggerTracker();
+  if (name === 'routine-tracker') renderRoutineTracker();
+  if (name === 'product-tracker') renderProductTracker();
+  if (name === 'recipes') renderRecipes();
+  if (name === 'pill-tracker') renderPillTracker();
+  if (name === 'stress-tracker') renderStressHistory();
+  if (name === 'allergy-tracker') renderAllergyTracker();
+}
+
+function closeSub(name) {
+  const el = document.getElementById('sub-' + name);
+  if (el) el.classList.remove('open');
+}
+
+// ══════════════════════════════════════
+// SHEET HELPERS
+// ══════════════════════════════════════
+function closeSheet(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function toggleEl(id) {
+  document.getElementById(id).classList.toggle('on');
+}
+
+function simulatePhoto() {
+  showToast('📷 Photo feature — connect camera in production');
+}
+
+// ══════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ══════════════════════════════════════
+// SERVICE WORKER REGISTRATION
+// ══════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
+// ══════════════════════════════════════
+// WATERMARK INTEGRITY ENGINE
+// © Emma-Lee Hendricks — DermaCalm 2025
+// ══════════════════════════════════════
+(function() {
+  const _owner = atob('RW1tYS1MZWUgSGVuZHJpY2tz'); // "Emma-Lee Hendricks"
+  const _app   = atob('RGVybWFDYWxt');               // "DermaCalm"
+  const _year  = '2025';
+  const _fp    = 'ELH-DC-2025-7a9e7e-3f8b2c1a';
+
+  // Lock ownership into window — non-writable
+  Object.defineProperty(window, '__DC_OWNER__', {
+    value: `${_app} \u00A9 ${_year} ${_owner}. All Rights Reserved. Fingerprint: ${_fp}`,
+    writable: false, configurable: false, enumerable: false
+  });
+  Object.defineProperty(window, '__DC_FP__', {
+    value: _fp, writable: false, configurable: false, enumerable: false
+  });
+
+  function enforceWatermark() {
+    // 1. Overlay div — pointer-events:none, never blocks clicks
+    let ov = document.getElementById('wm-overlay');
+    if (!ov) {
+      ov = document.createElement('div');
+      ov.id = 'wm-overlay';
+      ov.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(ov);
+    }
+
+    // 2. Inline footer credit inside nav
+    const footer = document.getElementById('wm-footer');
+    if (footer) {
+      footer.textContent = `\u{1F33F} \u00A9 ${_owner}`;
+    }
+
+    // 3. About card in More tab
+    const card = document.getElementById('wm-about-card');
+    if (card && !card.querySelector('.wm-brand')) {
+      card.innerHTML = `<span class="wm-brand">\u{1F33F} ${_app}</span>
+        <p>Original concept, design &amp; development by<br>
+        <strong style="color:#557a59">${_owner}</strong><br>
+        \u00A9 ${_year} \u00B7 All Rights Reserved<br>
+        <span style="font-size:10px;opacity:0.7">Fingerprint: ${_fp}</span></p>`;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', enforceWatermark);
+  setInterval(enforceWatermark, 5000);
+
+  // MutationObserver — re-inject if overlay is removed
+  const obs = new MutationObserver(enforceWatermark);
+  document.addEventListener('DOMContentLoaded', () => {
+    obs.observe(document.body, { childList: true, subtree: false });
+  });
+
+  // DevTools console branding
+  console.log(
+    `%c\u{1F33F} ${_app}%c\n\u00A9 ${_year} ${_owner}. All Rights Reserved.\nFingerprint: ${_fp}\nUnauthorised copying or redistribution is prohibited.`,
+    'color:#7a9e7e;font-size:18px;font-weight:bold;font-family:Georgia,serif;',
+    'color:#557a59;font-size:12px;'
+  );
+})();
+
+// ══════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  if (FIREBASE_CONFIG.apiKey !== 'REPLACE_WITH_YOUR_API_KEY') {
+    // Firebase configured — show auth screen briefly while checking session
+    document.getElementById('auth-screen').classList.remove('hidden');
+    initFirebase();
+  } else {
+    // Firebase not yet configured — go straight to PIN/app
+    initLock();
+  }
+});
+</script>
+</body>
+</html>
