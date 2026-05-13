@@ -1,0 +1,38 @@
+{
+  "name": "DermaCalm – Skin Wellness",
+  "short_name": "DermaCalm",
+  "description": "Your personal eczema & skin health companion. Original concept and design by Emma-Lee Hendricks.",
+  "author": "Emma-Lee Hendricks",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f5f0",
+  "theme_color": "#7a9e7e",
+  "lang": "en",
+  "categories": ["health", "lifestyle", "medical"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Quick Log",
+      "short_name": "Log",
+      "description": "Log today's symptoms",
+      "url": "/index.html#log",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
